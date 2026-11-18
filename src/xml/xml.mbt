@@ -1,5 +1,6 @@
 ///|
 /// XML Tokenizer
+#derive(Eq, Debug)
 pub(all) enum XmlTokenType {
   TagOpen
   TagClose
@@ -17,7 +18,7 @@ pub(all) enum XmlTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for XmlTokenType with fn output(self, logger) {
@@ -42,16 +43,17 @@ pub impl Show for XmlTokenType with fn output(self, logger) {
 }
 
 ///|
+#derive(Eq, Debug)
 pub(all) struct XmlToken {
   token_type : XmlTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for XmlToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

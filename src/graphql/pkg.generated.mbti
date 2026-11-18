@@ -16,13 +16,15 @@ pub fn highlight_graphql_to_html(String) -> String
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct GraphqlToken {
   token_type : GraphqlTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for GraphqlToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum GraphqlTokenType {
   Keyword
   TypeKeyword
@@ -55,7 +57,7 @@ pub(all) enum GraphqlTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for GraphqlTokenType
 
 pub(all) struct GraphqlTokenizer {

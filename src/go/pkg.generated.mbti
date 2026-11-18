@@ -16,13 +16,15 @@ pub fn highlight_go_to_html(String) -> String
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct GoToken {
   token_type : GoTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for GoToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum GoTokenType {
   Keyword
   TypeKeyword
@@ -53,7 +55,7 @@ pub(all) enum GoTokenType {
   LineComment
   BlockComment
   Error
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for GoTokenType
 
 pub(all) struct GoTokenizer {

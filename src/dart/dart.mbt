@@ -1,5 +1,6 @@
 ///|
 /// Dart Tokenizer
+#derive(Eq, Debug)
 pub(all) enum DartTokenType {
   Keyword
   DeclKeyword
@@ -40,7 +41,7 @@ pub(all) enum DartTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for DartTokenType with fn output(self, logger) {
@@ -88,16 +89,17 @@ pub impl Show for DartTokenType with fn output(self, logger) {
 }
 
 ///|
+#derive(Eq, Debug)
 pub(all) struct DartToken {
   token_type : DartTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for DartToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

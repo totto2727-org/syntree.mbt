@@ -1,5 +1,6 @@
 ///|
 /// Dockerfile Tokenizer
+#derive(Eq, Debug)
 pub(all) enum DockerfileTokenType {
   Instruction
   String
@@ -14,7 +15,7 @@ pub(all) enum DockerfileTokenType {
   Newline
   Continuation
   Unknown
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for DockerfileTokenType with fn output(self, logger) {
@@ -36,16 +37,17 @@ pub impl Show for DockerfileTokenType with fn output(self, logger) {
 }
 
 ///|
+#derive(Eq, Debug)
 pub(all) struct DockerfileToken {
   token_type : DockerfileTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for DockerfileToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")
@@ -102,7 +104,7 @@ fn is_digit(c : Char) -> Bool {
 
 ///|
 fn to_upper(s : String) -> String {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   for c in s {
     let upper = if c >= 'a' && c <= 'z' {
       (c.to_int() - 32).unsafe_to_char()

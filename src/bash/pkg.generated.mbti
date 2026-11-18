@@ -16,13 +16,15 @@ pub fn highlight_bash_to_html(String) -> String
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct BashToken {
   token_type : BashTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for BashToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum BashTokenType {
   Keyword
   Command
@@ -58,7 +60,7 @@ pub(all) enum BashTokenType {
   Equals
   Number
   Error
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for BashTokenType
 
 pub(all) struct BashTokenizer {

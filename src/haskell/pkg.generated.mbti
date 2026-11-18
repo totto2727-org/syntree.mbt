@@ -16,13 +16,15 @@ pub fn highlight_haskell_to_html(String) -> String
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct HaskellToken {
   token_type : HaskellTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for HaskellToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum HaskellTokenType {
   Keyword
   ModuleKeyword
@@ -61,7 +63,7 @@ pub(all) enum HaskellTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for HaskellTokenType
 
 pub(all) struct HaskellTokenizer {

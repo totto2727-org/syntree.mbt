@@ -16,16 +16,19 @@ pub fn mbt_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-type MbtContext derive(Eq, @debug.Debug)
+#derive(Eq, @debug.Debug)
+type MbtContext
 pub impl Show for MbtContext
 
+#derive(Eq, @debug.Debug)
 pub(all) struct MbtToken {
   token_type : MbtTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for MbtToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum MbtTokenType {
   Keyword
   String
@@ -68,7 +71,7 @@ pub(all) enum MbtTokenType {
   InterpStringMiddle
   InterpStringTail
   Error
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for MbtTokenType
 
 pub(all) struct MbtTokenizer {

@@ -16,13 +16,15 @@ pub fn ocaml_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct OcamlToken {
   token_type : OcamlTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for OcamlToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum OcamlTokenType {
   Keyword
   ModuleKeyword
@@ -57,7 +59,7 @@ pub(all) enum OcamlTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for OcamlTokenType
 
 pub(all) struct OcamlTokenizer {

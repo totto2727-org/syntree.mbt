@@ -10,6 +10,7 @@
 
 ///|
 /// MoonBit token types
+#derive(Eq, Debug)
 pub(all) enum MbtTokenType {
   // Keywords
   Keyword // fn, let, if, else, match, etc.
@@ -60,7 +61,7 @@ pub(all) enum MbtTokenType {
   InterpStringTail // }...  (end of interpolation)
   // Error
   Error
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for MbtTokenType with fn output(self, logger) {
@@ -187,16 +188,17 @@ fn is_builtin_type(word : String) -> Bool {
 
 ///|
 /// A token with position information
+#derive(Eq, Debug)
 pub(all) struct MbtToken {
   token_type : MbtTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for MbtToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")
@@ -210,11 +212,12 @@ pub impl Show for MbtToken with fn output(self, logger) {
 
 ///|
 /// Parser context for string interpolation
+#derive(Eq, Debug)
 enum MbtContext {
   Normal // Regular code
   StringInterp // Inside \{...} in "..." string
   InterpStringInterp // Inside \{...} in $|... string
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for MbtContext with fn output(self, logger) {

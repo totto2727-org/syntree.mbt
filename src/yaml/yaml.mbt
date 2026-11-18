@@ -6,6 +6,7 @@
 
 ///|
 /// YAML token types
+#derive(Eq, Debug)
 pub(all) enum YamlTokenType {
   // Structure
   Key // mapping key
@@ -41,7 +42,7 @@ pub(all) enum YamlTokenType {
 
   // Errors
   Error
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for YamlTokenType with fn output(self, logger) {
@@ -78,16 +79,17 @@ pub impl Show for YamlTokenType with fn output(self, logger) {
 
 ///|
 /// A token produced by the YAML tokenizer
+#derive(Eq, Debug)
 pub(all) struct YamlToken {
   token_type : YamlTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for YamlToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

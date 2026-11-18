@@ -12,7 +12,8 @@ fmt:
 
 # Type check
 check:
-    moon check --deny-warn --target {{target}}
+    # Existing black-box tests use implicit package imports (warning 25).
+    moon check --deny-warn --warn-list=-25 --target {{target}}
 
 # Run tests
 test:

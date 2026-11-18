@@ -1,5 +1,6 @@
 ///|
 /// Kotlin Tokenizer
+#derive(Eq, Debug)
 pub(all) enum KotlinTokenType {
   Keyword
   DeclKeyword
@@ -40,7 +41,7 @@ pub(all) enum KotlinTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for KotlinTokenType with fn output(self, logger) {
@@ -88,16 +89,17 @@ pub impl Show for KotlinTokenType with fn output(self, logger) {
 }
 
 ///|
+#derive(Eq, Debug)
 pub(all) struct KotlinToken {
   token_type : KotlinTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for KotlinToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

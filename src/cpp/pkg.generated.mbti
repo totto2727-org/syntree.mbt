@@ -16,13 +16,15 @@ pub fn highlight_cpp_to_html(String) -> String
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct CppToken {
   token_type : CppTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for CppToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum CppTokenType {
   Keyword
   Modifier
@@ -58,7 +60,7 @@ pub(all) enum CppTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for CppTokenType
 
 pub(all) struct CppTokenizer {

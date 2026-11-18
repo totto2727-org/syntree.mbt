@@ -1,5 +1,6 @@
 ///|
 /// Swift Tokenizer
+#derive(Eq, Debug)
 pub(all) enum SwiftTokenType {
   Keyword
   DeclKeyword
@@ -35,7 +36,7 @@ pub(all) enum SwiftTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for SwiftTokenType with fn output(self, logger) {
@@ -78,16 +79,17 @@ pub impl Show for SwiftTokenType with fn output(self, logger) {
 }
 
 ///|
+#derive(Eq, Debug)
 pub(all) struct SwiftToken {
   token_type : SwiftTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for SwiftToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

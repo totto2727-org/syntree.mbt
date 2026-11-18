@@ -16,13 +16,15 @@ pub fn makefile_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct MakefileToken {
   token_type : MakefileTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for MakefileToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum MakefileTokenType {
   Target
   Prerequisite
@@ -42,7 +44,7 @@ pub(all) enum MakefileTokenType {
   Newline
   Tab
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for MakefileTokenType
 
 pub(all) struct MakefileTokenizer {

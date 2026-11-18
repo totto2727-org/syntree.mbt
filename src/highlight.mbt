@@ -10,6 +10,7 @@
 
 ///|
 /// Standard highlight tags for syntax highlighting
+#derive(Eq, Debug)
 pub(all) enum HighlightTag {
   // Keywords & Operators
   Keyword
@@ -44,7 +45,7 @@ pub(all) enum HighlightTag {
   Invalid
   // No highlighting
   None
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for HighlightTag with fn output(self, logger) {
@@ -114,11 +115,12 @@ pub fn HighlightTag::to_class(self : HighlightTag) -> String {
 
 ///|
 /// A highlighted span of text
+#derive(Eq, Debug)
 pub(all) struct HighlightToken {
   from : Int
   to : Int
   tag : HighlightTag
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for HighlightToken with fn output(self, logger) {
@@ -127,7 +129,7 @@ pub impl Show for HighlightToken with fn output(self, logger) {
   logger.write_string(", to: ")
   logger.write_string(self.to.to_string())
   logger.write_string(", tag: ")
-  self.tag.output(logger)
+  Show::output(self.tag, logger)
   logger.write_string("}")
 }
 
@@ -212,7 +214,7 @@ pub fn Highlighter::highlight(
 ///|
 /// Escape HTML special characters
 pub fn escape_html(s : String) -> String {
-  let result = StringBuilder::new()
+  let result = StringBuilder()
   escape_html_to(s, result)
   result.to_string()
 }
@@ -444,7 +446,7 @@ pub fn tokens_to_html(
   source : String,
   tokens : Array[HighlightToken],
 ) -> String {
-  let result = StringBuilder::new()
+  let result = StringBuilder()
   let chars = source.to_array()
   let len = chars.length()
   let mut pos = 0

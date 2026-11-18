@@ -16,13 +16,15 @@ pub fn php_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct PhpToken {
   token_type : PhpTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for PhpToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum PhpTokenType {
   OpenTag
   CloseTag
@@ -66,7 +68,7 @@ pub(all) enum PhpTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for PhpTokenType
 
 pub(all) struct PhpTokenizer {

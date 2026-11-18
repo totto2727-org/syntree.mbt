@@ -16,13 +16,15 @@ pub fn highlight_dockerfile_to_html(String) -> String
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct DockerfileToken {
   token_type : DockerfileTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for DockerfileToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum DockerfileTokenType {
   Instruction
   String
@@ -37,7 +39,7 @@ pub(all) enum DockerfileTokenType {
   Newline
   Continuation
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for DockerfileTokenType
 
 pub(all) struct DockerfileTokenizer {

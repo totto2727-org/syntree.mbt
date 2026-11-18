@@ -16,13 +16,15 @@ pub fn highlight_c_to_html(String) -> String
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct CToken {
   token_type : CTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for CToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum CTokenType {
   Keyword
   TypeKeyword
@@ -54,7 +56,7 @@ pub(all) enum CTokenType {
   LineComment
   BlockComment
   Error
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for CTokenType
 
 pub(all) struct CTokenizer {

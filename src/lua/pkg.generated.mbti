@@ -16,13 +16,15 @@ pub fn lua_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct LuaToken {
   token_type : LuaTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for LuaToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum LuaTokenType {
   Keyword
   String
@@ -54,7 +56,7 @@ pub(all) enum LuaTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for LuaTokenType
 
 pub(all) struct LuaTokenizer {

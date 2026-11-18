@@ -16,13 +16,15 @@ pub fn kotlin_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct KotlinToken {
   token_type : KotlinTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for KotlinToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum KotlinTokenType {
   Keyword
   DeclKeyword
@@ -63,7 +65,7 @@ pub(all) enum KotlinTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for KotlinTokenType
 
 pub(all) struct KotlinTokenizer {

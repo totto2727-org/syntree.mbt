@@ -16,13 +16,15 @@ pub fn yaml_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct YamlToken {
   token_type : YamlTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for YamlToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum YamlTokenType {
   Key
   Value
@@ -47,7 +49,7 @@ pub(all) enum YamlTokenType {
   Greater
   Comment
   Error
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for YamlTokenType
 
 pub(all) struct YamlTokenizer {

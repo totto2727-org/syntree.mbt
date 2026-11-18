@@ -17,7 +17,7 @@ fn generate_simple_json() -> String {
 ///|
 /// Generate a nested JSON object
 fn generate_nested_json(depth : Int) -> String {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   for _i = 0; _i < depth; _i = _i + 1 {
     buf.write_string("{\"nested\": ")
   }
@@ -31,7 +31,7 @@ fn generate_nested_json(depth : Int) -> String {
 ///|
 /// Generate a JSON array with numbers
 fn generate_json_array(size : Int) -> String {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   buf.write_string("[")
   for i = 0; i < size; i = i + 1 {
     if i > 0 {
@@ -46,7 +46,7 @@ fn generate_json_array(size : Int) -> String {
 ///|
 /// Generate a JSON object with many properties
 fn generate_json_object(props : Int) -> String {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   buf.write_string("{")
   for i = 0; i < props; i = i + 1 {
     if i > 0 {
@@ -64,7 +64,7 @@ fn generate_json_object(props : Int) -> String {
 ///|
 /// Generate a complex JSON document
 fn generate_complex_json(size : Int) -> String {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   buf.write_string("{\"items\": [")
   for i = 0; i < size; i = i + 1 {
     if i > 0 {

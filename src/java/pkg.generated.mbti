@@ -16,13 +16,15 @@ pub fn java_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) struct JavaToken {
   token_type : JavaTokenType
-  from : Int
-  to : Int
-} derive(Eq, @debug.Debug)
+  from : Int32
+  to : Int32
+}
 pub impl Show for JavaToken
 
+#derive(Eq, @debug.Debug)
 pub(all) enum JavaTokenType {
   Keyword
   Modifier
@@ -58,7 +60,7 @@ pub(all) enum JavaTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub impl Show for JavaTokenType
 
 pub(all) struct JavaTokenizer {

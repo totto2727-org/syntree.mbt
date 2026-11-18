@@ -1,5 +1,6 @@
 ///|
 /// PHP Tokenizer
+#derive(Eq, Debug)
 pub(all) enum PhpTokenType {
   OpenTag
   CloseTag
@@ -43,7 +44,7 @@ pub(all) enum PhpTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for PhpTokenType with fn output(self, logger) {
@@ -94,16 +95,17 @@ pub impl Show for PhpTokenType with fn output(self, logger) {
 }
 
 ///|
+#derive(Eq, Debug)
 pub(all) struct PhpToken {
   token_type : PhpTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for PhpToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")
@@ -353,7 +355,7 @@ fn PhpTokenizer::read_identifier(self : PhpTokenizer) -> PhpToken {
 
 ///|
 fn to_lower(s : String) -> String {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   for c in s {
     let lower = if c >= 'A' && c <= 'Z' {
       (c.to_int() + 32).unsafe_to_char()

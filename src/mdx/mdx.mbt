@@ -12,6 +12,7 @@
 
 ///|
 /// MDX token types
+#derive(Eq, Debug)
 pub(all) enum MdxTokenType {
   // Markdown block elements
   Heading // # ## ### etc.
@@ -77,7 +78,7 @@ pub(all) enum MdxTokenType {
   Whitespace // Spaces, tabs
   Newline // Line breaks
   Error
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for MdxTokenType with fn output(self, logger) {
@@ -144,6 +145,7 @@ pub impl Show for MdxTokenType with fn output(self, logger) {
 
 ///|
 /// Parser context
+#derive(Eq, Debug)
 enum MdxContext {
   // Top-level contexts
   Normal // Normal markdown content
@@ -161,7 +163,7 @@ enum MdxContext {
 
   // JavaScript contexts (for import/export)
   JsStatement // Parsing import/export statement
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for MdxContext with fn output(self, logger) {
@@ -190,16 +192,17 @@ pub impl Show for MdxContext with fn output(self, logger) {
 
 ///|
 /// A token with position information
+#derive(Eq, Debug)
 pub(all) struct MdxToken {
   token_type : MdxTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for MdxToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

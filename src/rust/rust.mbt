@@ -10,6 +10,7 @@
 
 ///|
 /// Rust token types
+#derive(Eq, Debug)
 pub(all) enum RustTokenType {
   // Keywords
   Keyword // fn, let, mut, const, struct, enum, impl, trait, etc.
@@ -48,7 +49,7 @@ pub(all) enum RustTokenType {
   DocComment // /// or //!
   // Error
   Error
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for RustTokenType with fn output(self, logger) {
@@ -189,16 +190,17 @@ fn is_builtin_type(word : String) -> Bool {
 
 ///|
 /// A token with position information
+#derive(Eq, Debug)
 pub(all) struct RustToken {
   token_type : RustTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for RustToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")
