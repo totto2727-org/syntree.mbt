@@ -16,15 +16,13 @@ pub fn rust_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct RustToken {
   token_type : RustTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for RustToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum RustTokenType {
   Keyword
   ControlFlow
@@ -54,7 +52,7 @@ pub(all) enum RustTokenType {
   BlockComment
   DocComment
   Error
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for RustTokenType
 
 pub(all) struct RustTokenizer {

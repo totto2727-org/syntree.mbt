@@ -8,7 +8,7 @@ import {
 // Values
 pub fn escape_html(String) -> String
 
-pub fn escape_html_slice_to(Array[Char], Int32, Int32, StringBuilder) -> Unit
+pub fn escape_html_slice_to(Array[Char], Int, Int, StringBuilder) -> Unit
 
 pub fn get_extensions_for_language(String) -> Array[String]
 
@@ -25,7 +25,6 @@ pub fn tokens_to_html(String, Array[HighlightToken]) -> String
 // Types and methods
 type CursorFrame
 
-#derive(Eq, @debug.Debug)
 pub(all) enum HighlightTag {
   Keyword
   Operator
@@ -51,17 +50,16 @@ pub(all) enum HighlightTag {
   TagBracket
   Invalid
   None
-}
+} derive(Eq, @debug.Debug)
 pub fn HighlightTag::to_class(Self) -> String
 pub impl Show for HighlightTag
 
-#derive(Eq, @debug.Debug)
 pub(all) struct HighlightToken {
-  from : Int32
-  to : Int32
+  from : Int
+  to : Int
   tag : HighlightTag
-}
-pub fn HighlightToken::new(Int32, Int32, HighlightTag) -> Self
+} derive(Eq, @debug.Debug)
+pub fn HighlightToken::new(Int, Int, HighlightTag) -> Self
 pub impl Show for HighlightToken
 
 pub(all) struct Highlighter {
@@ -74,66 +72,65 @@ pub fn Highlighter::new() -> Self
 
 pub(all) struct LineCache {
   lines : Array[Array[HighlightToken]]
-  mut line_starts : Array[Int32]
+  mut line_starts : Array[Int]
   mut source : String
 }
 pub fn LineCache::all_tokens(Self) -> Array[HighlightToken]
-pub fn LineCache::get_line_tokens(Self, Int32) -> Array[HighlightToken]
+pub fn LineCache::get_line_tokens(Self, Int) -> Array[HighlightToken]
 pub fn LineCache::get_source(Self) -> String
-pub fn LineCache::line_count(Self) -> Int32
+pub fn LineCache::line_count(Self) -> Int
 pub fn LineCache::new(String, (String) -> Array[HighlightToken]) -> Self
 pub fn LineCache::rebuild(Self, String, (String) -> Array[HighlightToken]) -> Unit
-pub fn LineCache::update(Self, String, Int32, (String) -> Array[HighlightToken]) -> (Int32, Int32)
+pub fn LineCache::update(Self, String, Int, (String) -> Array[HighlightToken]) -> (Int, Int)
 
-#derive(Eq, @debug.Debug)
 pub(all) struct NodeType {
-  id : Int32
+  id : Int
   name : String
   is_error : Bool
-}
-pub fn NodeType::error(Int32) -> Self
-pub fn NodeType::new(Int32, String) -> Self
+} derive(Eq, @debug.Debug)
+pub fn NodeType::error(Int) -> Self
+pub fn NodeType::new(Int, String) -> Self
 pub impl Show for NodeType
 
 pub(all) enum Tree {
-  Node(node_type~ : NodeType, from~ : Int32, to~ : Int32, children~ : Array[Tree])
-  Leaf(node_type~ : NodeType, from~ : Int32, to~ : Int32)
-  Buffered(buffer~ : TreeBuffer, from~ : Int32, to~ : Int32)
+  Node(node_type~ : NodeType, from~ : Int, to~ : Int, children~ : Array[Tree])
+  Leaf(node_type~ : NodeType, from~ : Int, to~ : Int)
+  Buffered(buffer~ : TreeBuffer, from~ : Int, to~ : Int)
 }
 pub fn Tree::children(Self) -> Array[Self]
-pub fn Tree::from(Self) -> Int32
+pub fn Tree::from(Self) -> Int
 pub fn Tree::iter(Self) -> Iter[Self]
-pub fn Tree::leaf(NodeType, Int32, Int32) -> Self
-pub fn Tree::length(Self) -> Int32
-pub fn Tree::node(NodeType, Int32, Int32, Array[Self]) -> Self
+pub fn Tree::leaf(NodeType, Int, Int) -> Self
+pub fn Tree::length(Self) -> Int
+pub fn Tree::node(NodeType, Int, Int, Array[Self]) -> Self
 pub fn Tree::node_type(Self) -> NodeType?
-pub fn Tree::resolve(Self, Int32) -> Self?
-pub fn Tree::to(Self) -> Int32
+pub fn Tree::resolve(Self, Int) -> Self?
+pub fn Tree::to(Self) -> Int
 
 pub(all) struct TreeBuffer {
-  data : Array[Int32]
+  data : Array[Int]
   node_types : Array[NodeType]
 }
-pub fn TreeBuffer::get_node(Self, Int32) -> (Int32, Int32, Int32, Int32)?
+pub fn TreeBuffer::get_node(Self, Int) -> (Int, Int, Int, Int)?
 pub fn TreeBuffer::new(Array[NodeType]) -> Self
-pub fn TreeBuffer::node_count(Self) -> Int32
-pub fn TreeBuffer::push_leaf(Self, Int32, Int32, Int32) -> Unit
+pub fn TreeBuffer::node_count(Self) -> Int
+pub fn TreeBuffer::push_leaf(Self, Int, Int, Int) -> Unit
 
 pub(all) struct TreeCursor {
   root : Tree
   // private fields
 }
 pub fn TreeCursor::at_root(Self) -> Bool
-pub fn TreeCursor::depth(Self) -> Int32
+pub fn TreeCursor::depth(Self) -> Int
 pub fn TreeCursor::first_child(Self) -> Bool
-pub fn TreeCursor::from(Self) -> Int32
+pub fn TreeCursor::from(Self) -> Int
 pub fn TreeCursor::name(Self) -> String
 pub fn TreeCursor::new(Tree) -> Self
 pub fn TreeCursor::next_sibling(Self) -> Bool
 pub fn TreeCursor::node_type(Self) -> NodeType?
 pub fn TreeCursor::parent(Self) -> Bool
 pub fn TreeCursor::reset(Self) -> Unit
-pub fn TreeCursor::to(Self) -> Int32
+pub fn TreeCursor::to(Self) -> Int
 
 // Type aliases
 

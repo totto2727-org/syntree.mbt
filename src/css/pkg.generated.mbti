@@ -16,15 +16,13 @@ pub fn highlight_css_to_html(String) -> String
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct CssToken {
   token_type : CssTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for CssToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum CssTokenType {
   TagSelector
   ClassSelector
@@ -55,7 +53,7 @@ pub(all) enum CssTokenType {
   Comma
   Comment
   Error
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for CssTokenType
 
 pub(all) struct CssTokenizer {

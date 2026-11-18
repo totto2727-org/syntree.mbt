@@ -16,15 +16,13 @@ pub fn scala_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct ScalaToken {
   token_type : ScalaTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for ScalaToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum ScalaTokenType {
   Keyword
   DeclKeyword
@@ -64,7 +62,7 @@ pub(all) enum ScalaTokenType {
   Whitespace
   Newline
   Unknown
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for ScalaTokenType
 
 pub(all) struct ScalaTokenizer {

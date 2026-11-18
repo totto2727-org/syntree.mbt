@@ -16,15 +16,13 @@ pub fn highlight_csharp_to_html(String) -> String
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct CsharpToken {
   token_type : CsharpTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for CsharpToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum CsharpTokenType {
   Keyword
   ContextKeyword
@@ -67,7 +65,7 @@ pub(all) enum CsharpTokenType {
   Whitespace
   Newline
   Unknown
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for CsharpTokenType
 
 pub(all) struct CsharpTokenizer {

@@ -16,15 +16,13 @@ pub fn highlight_dart_to_html(String) -> String
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct DartToken {
   token_type : DartTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for DartToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum DartTokenType {
   Keyword
   DeclKeyword
@@ -65,7 +63,7 @@ pub(all) enum DartTokenType {
   Whitespace
   Newline
   Unknown
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for DartTokenType
 
 pub(all) struct DartTokenizer {

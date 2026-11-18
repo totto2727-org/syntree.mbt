@@ -16,15 +16,13 @@ pub fn xml_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct XmlToken {
   token_type : XmlTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for XmlToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum XmlTokenType {
   TagOpen
   TagClose
@@ -42,7 +40,7 @@ pub(all) enum XmlTokenType {
   Whitespace
   Newline
   Unknown
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for XmlTokenType
 
 pub(all) struct XmlTokenizer {

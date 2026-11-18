@@ -16,15 +16,13 @@ pub fn zig_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct ZigToken {
   token_type : ZigTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for ZigToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum ZigTokenType {
   Keyword
   TypeKeyword
@@ -57,7 +55,7 @@ pub(all) enum ZigTokenType {
   LineComment
   DocComment
   Error
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for ZigTokenType
 
 pub(all) struct ZigTokenizer {

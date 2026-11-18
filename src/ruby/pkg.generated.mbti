@@ -16,15 +16,13 @@ pub fn ruby_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct RubyToken {
   token_type : RubyTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for RubyToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum RubyTokenType {
   Keyword
   DeclKeyword
@@ -64,7 +62,7 @@ pub(all) enum RubyTokenType {
   Whitespace
   Newline
   Unknown
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for RubyTokenType
 
 pub(all) struct RubyTokenizer {

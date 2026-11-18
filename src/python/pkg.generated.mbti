@@ -16,15 +16,13 @@ pub fn python_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct PythonToken {
   token_type : PythonTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for PythonToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum PythonTokenType {
   Keyword
   String
@@ -57,7 +55,7 @@ pub(all) enum PythonTokenType {
   Whitespace
   Newline
   Unknown
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for PythonTokenType
 
 pub(all) struct PythonTokenizer {

@@ -2,6 +2,8 @@
 
 Incremental syntax tree and highlighting toolkit for MoonBit.
 
+See [upstream differences](docs/upstream-differences.md) for this fork's compatibility changes.
+
 ## Packages
 
 - `mizchi/syntree` - core tree, cursor, highlight APIs, and extension mapping

@@ -20,7 +20,6 @@ pub fn parse_json(String) -> @syntree.Tree?
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) enum JsonNodeId {
   JsonDocument
   Object
@@ -39,9 +38,9 @@ pub(all) enum JsonNodeId {
   Comma
   PropertyName
   Error
-}
-pub fn JsonNodeId::from_int(Int32) -> Self
-pub fn JsonNodeId::to_int(Self) -> Int32
+} derive(Eq, @debug.Debug)
+pub fn JsonNodeId::from_int(Int) -> Self
+pub fn JsonNodeId::to_int(Self) -> Int
 pub impl Show for JsonNodeId
 
 pub(all) struct JsonParser {
@@ -59,12 +58,11 @@ pub fn JsonParser::parse_property(Self) -> @syntree.Tree?
 pub fn JsonParser::parse_value(Self) -> @syntree.Tree?
 pub fn JsonParser::peek(Self) -> JsonToken?
 
-#derive(Eq, @debug.Debug)
 pub(all) struct JsonToken {
   node_type : JsonNodeId
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for JsonToken
 
 pub(all) struct JsonTokenizer {
@@ -76,7 +74,7 @@ pub fn JsonTokenizer::at_end(Self) -> Bool
 pub fn JsonTokenizer::new(String) -> Self
 pub fn JsonTokenizer::next_token(Self) -> JsonToken?
 pub fn JsonTokenizer::peek(Self) -> Char?
-pub fn JsonTokenizer::peek_at(Self, Int32) -> Char?
+pub fn JsonTokenizer::peek_at(Self, Int) -> Char?
 pub fn JsonTokenizer::read_keyword(Self) -> JsonToken
 pub fn JsonTokenizer::read_number(Self) -> JsonToken
 pub fn JsonTokenizer::read_string(Self) -> JsonToken

@@ -16,15 +16,13 @@ pub fn swift_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct SwiftToken {
   token_type : SwiftTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for SwiftToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum SwiftTokenType {
   Keyword
   DeclKeyword
@@ -60,7 +58,7 @@ pub(all) enum SwiftTokenType {
   Whitespace
   Newline
   Unknown
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for SwiftTokenType
 
 pub(all) struct SwiftTokenizer {

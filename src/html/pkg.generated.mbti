@@ -16,15 +16,13 @@ pub fn html_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct HtmlToken {
   token_type : HtmlTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for HtmlToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum HtmlTokenType {
   TagOpen
   TagClose
@@ -39,7 +37,7 @@ pub(all) enum HtmlTokenType {
   Doctype
   CData
   Error
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for HtmlTokenType
 
 pub(all) struct HtmlTokenizer {

@@ -16,15 +16,13 @@ pub fn sql_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct SqlToken {
   token_type : SqlTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for SqlToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum SqlTokenType {
   Keyword
   DMLKeyword
@@ -52,7 +50,7 @@ pub(all) enum SqlTokenType {
   Whitespace
   Newline
   Unknown
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for SqlTokenType
 
 pub(all) struct SqlTokenizer {

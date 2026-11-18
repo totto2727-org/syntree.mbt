@@ -16,19 +16,16 @@ pub fn mdx_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
-type MdxContext
+type MdxContext derive(Eq, @debug.Debug)
 pub impl Show for MdxContext
 
-#derive(Eq, @debug.Debug)
 pub(all) struct MdxToken {
   token_type : MdxTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for MdxToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum MdxTokenType {
   Heading
   HeadingMarker
@@ -83,7 +80,7 @@ pub(all) enum MdxTokenType {
   Whitespace
   Newline
   Error
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for MdxTokenType
 
 pub(all) struct MdxTokenizer {

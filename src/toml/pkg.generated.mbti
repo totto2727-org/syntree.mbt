@@ -16,15 +16,13 @@ pub fn toml_highlighter() -> @syntree.Highlighter
 // Errors
 
 // Types and methods
-#derive(Eq, @debug.Debug)
 pub(all) struct TomlToken {
   token_type : TomlTokenType
-  from : Int32
-  to : Int32
-}
+  from : Int
+  to : Int
+} derive(Eq, @debug.Debug)
 pub impl Show for TomlToken
 
-#derive(Eq, @debug.Debug)
 pub(all) enum TomlTokenType {
   Key
   TableHeader
@@ -45,7 +43,7 @@ pub(all) enum TomlTokenType {
   Whitespace
   Newline
   Unknown
-}
+} derive(Eq, @debug.Debug)
 pub impl Show for TomlTokenType
 
 pub(all) struct TomlTokenizer {
