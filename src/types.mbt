@@ -25,7 +25,7 @@
 #derive(Eq, Debug)
 pub(all) struct NodeType {
   /// Unique identifier for this node type
-  id : Int
+  id : Int32
   /// Human-readable name (e.g., "FunctionDeclaration", "String")
   name : String
   /// Whether this is an error node
@@ -45,14 +45,14 @@ pub impl Show for NodeType with fn output(self, logger) {
 
 ///|
 /// Create a new node type
-pub fn NodeType::new(id : Int, name : String) -> NodeType {
-  { id, name, is_error: false }
+pub fn NodeType::new(id : Int32, name : String) -> NodeType {
+  { id, name, is_error: false, }
 }
 
 ///|
 /// Create an error node type
-pub fn NodeType::error(id : Int) -> NodeType {
-  { id, name: "Error", is_error: true }
+pub fn NodeType::error(id : Int32) -> NodeType {
+  { id, name: "Error", is_error: true, }
 }
 
 // =============================================================================
@@ -73,7 +73,7 @@ pub fn NodeType::error(id : Int) -> NodeType {
 /// This is inspired by compact tree buffer representations (Uint16Array style).
 pub(all) struct TreeBuffer {
   /// Raw data: [type_id, from, to, size, ...]
-  data : Array[Int]
+  data : Array[Int32]
   /// Node type registry
   node_types : Array[NodeType]
 }
@@ -81,12 +81,12 @@ pub(all) struct TreeBuffer {
 ///|
 /// Create an empty TreeBuffer
 pub fn TreeBuffer::new(node_types : Array[NodeType]) -> TreeBuffer {
-  { data: [], node_types }
+  { data: [], node_types, }
 }
 
 ///|
 /// Number of nodes in the buffer
-pub fn TreeBuffer::node_count(self : TreeBuffer) -> Int {
+pub fn TreeBuffer::node_count(self : TreeBuffer) -> Int32 {
   // Each node takes 4 integers
   self.data.length() / 4
 }
@@ -95,9 +95,9 @@ pub fn TreeBuffer::node_count(self : TreeBuffer) -> Int {
 /// Append a leaf node (no children)
 pub fn TreeBuffer::push_leaf(
   self : TreeBuffer,
-  type_id : Int,
-  from : Int,
-  to : Int,
+  type_id : Int32,
+  from : Int32,
+  to : Int32,
 ) -> Unit {
   self.data.push(type_id)
   self.data.push(from)
@@ -109,8 +109,8 @@ pub fn TreeBuffer::push_leaf(
 /// Get node info at index
 pub fn TreeBuffer::get_node(
   self : TreeBuffer,
-  index : Int,
-) -> (Int, Int, Int, Int)? {
+  index : Int32,
+) -> (Int32, Int32, Int32, Int32)? {
   let offset = index * 4
   if offset + 4 > self.data.length() {
     return None
@@ -141,16 +141,21 @@ pub fn TreeBuffer::get_node(
 /// - Buffer-backed subtrees for compact storage of many small nodes
 pub(all) enum Tree {
   /// Regular node with explicit children
-  Node(node_type~ : NodeType, from~ : Int, to~ : Int, children~ : Array[Tree])
+  Node(
+    node_type~ : NodeType,
+    from~ : Int32,
+    to~ : Int32,
+    children~ : Array[Tree],
+  )
   /// Leaf node (no children)
-  Leaf(node_type~ : NodeType, from~ : Int, to~ : Int)
+  Leaf(node_type~ : NodeType, from~ : Int32, to~ : Int32)
   /// Buffer-backed subtree (for memory efficiency)
-  Buffered(buffer~ : TreeBuffer, from~ : Int, to~ : Int)
+  Buffered(buffer~ : TreeBuffer, from~ : Int32, to~ : Int32)
 }
 
 ///|
 /// Get the start position of a tree
-pub fn Tree::from(self : Tree) -> Int {
+pub fn Tree::from(self : Tree) -> Int32 {
   match self {
     Node(from~, ..) => from
     Leaf(from~, ..) => from
@@ -160,7 +165,7 @@ pub fn Tree::from(self : Tree) -> Int {
 
 ///|
 /// Get the end position of a tree
-pub fn Tree::to(self : Tree) -> Int {
+pub fn Tree::to(self : Tree) -> Int32 {
   match self {
     Node(to~, ..) => to
     Leaf(to~, ..) => to
@@ -180,13 +185,13 @@ pub fn Tree::node_type(self : Tree) -> NodeType? {
 
 ///|
 /// Get the length of the tree
-pub fn Tree::length(self : Tree) -> Int {
+pub fn Tree::length(self : Tree) -> Int32 {
   self.to() - self.from()
 }
 
 ///|
 /// Create a leaf node
-pub fn Tree::leaf(node_type : NodeType, from : Int, to : Int) -> Tree {
+pub fn Tree::leaf(node_type : NodeType, from : Int32, to : Int32) -> Tree {
   Leaf(node_type~, from~, to~)
 }
 
@@ -194,8 +199,8 @@ pub fn Tree::leaf(node_type : NodeType, from : Int, to : Int) -> Tree {
 /// Create a node with children
 pub fn Tree::node(
   node_type : NodeType,
-  from : Int,
-  to : Int,
+  from : Int32,
+  to : Int32,
   children : Array[Tree],
 ) -> Tree {
   Node(node_type~, from~, to~, children~)
@@ -219,7 +224,7 @@ pub fn Tree::children(self : Tree) -> Array[Tree] {
 /// Stack frame for tree traversal
 struct CursorFrame {
   tree : Tree
-  child_index : Int
+  child_index : Int32
 }
 
 ///| Efficient tree traversal cursor
@@ -240,18 +245,18 @@ pub(all) struct TreeCursor {
 ///|
 /// Create a cursor at the root of a tree
 pub fn TreeCursor::new(tree : Tree) -> TreeCursor {
-  { root: tree, stack: [], current: tree }
+  { root: tree, stack: [], current: tree, }
 }
 
 ///|
 /// Get current node's start position
-pub fn TreeCursor::from(self : TreeCursor) -> Int {
+pub fn TreeCursor::from(self : TreeCursor) -> Int32 {
   self.current.from()
 }
 
 ///|
 /// Get current node's end position
-pub fn TreeCursor::to(self : TreeCursor) -> Int {
+pub fn TreeCursor::to(self : TreeCursor) -> Int32 {
   self.current.to()
 }
 
@@ -277,7 +282,7 @@ pub fn TreeCursor::first_child(self : TreeCursor) -> Bool {
   if children.is_empty() {
     return false
   }
-  self.stack.push({ tree: self.current, child_index: 0 })
+  self.stack.push({ tree: self.current, child_index: 0, })
   self.current = children[0]
   true
 }
@@ -329,7 +334,7 @@ pub fn TreeCursor::at_root(self : TreeCursor) -> Bool {
 
 ///|
 /// Get depth in tree (0 = root)
-pub fn TreeCursor::depth(self : TreeCursor) -> Int {
+pub fn TreeCursor::depth(self : TreeCursor) -> Int32 {
   self.stack.length()
 }
 
@@ -356,7 +361,7 @@ pub fn Tree::iter(self : Tree) -> Iter[Tree] {
 
 ///|
 /// Find the deepest node containing a position
-pub fn Tree::resolve(self : Tree, pos : Int) -> Tree? {
+pub fn Tree::resolve(self : Tree, pos : Int32) -> Tree? {
   if pos < self.from() || pos > self.to() {
     return None
   }

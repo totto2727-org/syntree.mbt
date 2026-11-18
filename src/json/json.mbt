@@ -60,7 +60,7 @@ pub impl Show for JsonNodeId with fn output(self, logger) {
 
 ///|
 /// Convert JsonNodeId to Int
-pub fn JsonNodeId::to_int(self : JsonNodeId) -> Int {
+pub fn JsonNodeId::to_int(self : JsonNodeId) -> Int32 {
   match self {
     JsonDocument => 0
     Object => 1
@@ -84,7 +84,7 @@ pub fn JsonNodeId::to_int(self : JsonNodeId) -> Int {
 
 ///|
 /// Convert Int to JsonNodeId
-pub fn JsonNodeId::from_int(id : Int) -> JsonNodeId {
+pub fn JsonNodeId::from_int(id : Int32) -> JsonNodeId {
   match id {
     0 => JsonDocument
     1 => Object
@@ -140,8 +140,8 @@ pub fn json_node_type(id : JsonNodeId) -> @syntree.NodeType {
 #derive(Eq, Debug)
 pub(all) struct JsonToken {
   node_type : JsonNodeId
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -160,15 +160,15 @@ pub impl Show for JsonToken with fn output(self, logger) {
 pub(all) struct JsonTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
 /// Create a new tokenizer
 pub fn JsonTokenizer::new(input : String) -> JsonTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
@@ -189,7 +189,7 @@ pub fn JsonTokenizer::peek(self : JsonTokenizer) -> Char? {
 
 ///|
 /// Peek character at offset
-pub fn JsonTokenizer::peek_at(self : JsonTokenizer, offset : Int) -> Char? {
+pub fn JsonTokenizer::peek_at(self : JsonTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -243,7 +243,7 @@ pub fn JsonTokenizer::read_string(self : JsonTokenizer) -> JsonToken {
       self.pos += 1
     }
   }
-  { node_type: String, from: start, to: self.pos }
+  { node_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -286,12 +286,12 @@ pub fn JsonTokenizer::read_number(self : JsonTokenizer) -> JsonToken {
       }
     }
   }
-  { node_type: Number, from: start, to: self.pos }
+  { node_type: Number, from: start, to: self.pos, }
 }
 
 ///|
 /// Match keyword by comparing characters directly (no string allocation)
-fn match_keyword(chars : Array[Char], start : Int, len : Int) -> JsonNodeId {
+fn match_keyword(chars : Array[Char], start : Int32, len : Int32) -> JsonNodeId {
   let word_len = len - start
   if word_len == 4 {
     // "true" or "null"
@@ -336,7 +336,7 @@ pub fn JsonTokenizer::read_keyword(self : JsonTokenizer) -> JsonToken {
     }
   }
   let node_type = match_keyword(self.chars, start, self.pos)
-  { node_type, from: start, to: self.pos }
+  { node_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -352,27 +352,27 @@ pub fn JsonTokenizer::next_token(self : JsonTokenizer) -> JsonToken? {
   match c {
     '{' => {
       self.pos += 1
-      Some({ node_type: BraceOpen, from: start, to: self.pos })
+      Some({ node_type: BraceOpen, from: start, to: self.pos, })
     }
     '}' => {
       self.pos += 1
-      Some({ node_type: BraceClose, from: start, to: self.pos })
+      Some({ node_type: BraceClose, from: start, to: self.pos, })
     }
     '[' => {
       self.pos += 1
-      Some({ node_type: BracketOpen, from: start, to: self.pos })
+      Some({ node_type: BracketOpen, from: start, to: self.pos, })
     }
     ']' => {
       self.pos += 1
-      Some({ node_type: BracketClose, from: start, to: self.pos })
+      Some({ node_type: BracketClose, from: start, to: self.pos, })
     }
     ':' => {
       self.pos += 1
-      Some({ node_type: Colon, from: start, to: self.pos })
+      Some({ node_type: Colon, from: start, to: self.pos, })
     }
     ',' => {
       self.pos += 1
-      Some({ node_type: Comma, from: start, to: self.pos })
+      Some({ node_type: Comma, from: start, to: self.pos, })
     }
     '"' => Some(self.read_string())
     '-' => Some(self.read_number())
@@ -381,7 +381,7 @@ pub fn JsonTokenizer::next_token(self : JsonTokenizer) -> JsonToken? {
     't' | 'f' | 'n' => Some(self.read_keyword())
     _ => {
       self.pos += 1
-      Some({ node_type: Error, from: start, to: self.pos })
+      Some({ node_type: Error, from: start, to: self.pos, })
     }
   }
 }
@@ -408,7 +408,7 @@ pub fn JsonTokenizer::tokenize_all(self : JsonTokenizer) -> Array[JsonToken] {
 pub(all) struct JsonParser {
   input : String
   priv tokens : Array[JsonToken]
-  priv mut pos : Int
+  priv mut pos : Int32
 }
 
 ///|
@@ -416,7 +416,7 @@ pub(all) struct JsonParser {
 pub fn JsonParser::new(input : String) -> JsonParser {
   let tokenizer = JsonTokenizer::new(input)
   let tokens = tokenizer.tokenize_all()
-  { input, tokens, pos: 0 }
+  { input, tokens, pos: 0, }
 }
 
 ///|

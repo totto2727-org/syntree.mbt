@@ -96,8 +96,8 @@ pub impl Show for CsharpTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct CsharpToken {
   token_type : CsharpTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -115,8 +115,8 @@ pub impl Show for CsharpToken with fn output(self, logger) {
 pub(all) struct CsharpTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -152,11 +152,11 @@ let csharp_type_keywords : Array[String] = [
 ///|
 pub fn CsharpTokenizer::new(input : String) -> CsharpTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn CsharpTokenizer::peek_at(self : CsharpTokenizer, offset : Int) -> Char? {
+fn CsharpTokenizer::peek_at(self : CsharpTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -198,7 +198,7 @@ fn CsharpTokenizer::read_string(self : CsharpTokenizer) -> CsharpToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -218,7 +218,7 @@ fn CsharpTokenizer::read_verbatim_string(self : CsharpTokenizer) -> CsharpToken 
       self.pos += 1
     }
   }
-  { token_type: VerbatimString, from: start, to: self.pos }
+  { token_type: VerbatimString, from: start, to: self.pos, }
 }
 
 ///|
@@ -250,7 +250,7 @@ fn CsharpTokenizer::read_interpolated_string(
       self.pos += 1
     }
   }
-  { token_type: InterpolatedString, from: start, to: self.pos }
+  { token_type: InterpolatedString, from: start, to: self.pos, }
 }
 
 ///|
@@ -265,7 +265,7 @@ fn CsharpTokenizer::read_char(self : CsharpTokenizer) -> CsharpToken {
   if self.pos < self.len && self.chars[self.pos] == '\'' {
     self.pos += 1
   }
-  { token_type: Char, from: start, to: self.pos }
+  { token_type: Char, from: start, to: self.pos, }
 }
 
 ///|
@@ -287,7 +287,7 @@ fn CsharpTokenizer::read_number(self : CsharpTokenizer) -> CsharpToken {
         }
       }
       self.read_number_suffix()
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'b' || next == 'B' {
       self.pos += 2
       while self.pos < self.len {
@@ -299,7 +299,7 @@ fn CsharpTokenizer::read_number(self : CsharpTokenizer) -> CsharpToken {
         }
       }
       self.read_number_suffix()
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -329,7 +329,7 @@ fn CsharpTokenizer::read_number(self : CsharpTokenizer) -> CsharpToken {
     }
   }
   self.read_number_suffix()
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -385,7 +385,7 @@ fn CsharpTokenizer::read_identifier(self : CsharpTokenizer) -> CsharpToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -394,7 +394,7 @@ fn CsharpTokenizer::read_preprocessor(self : CsharpTokenizer) -> CsharpToken {
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: Preprocessor, from: start, to: self.pos }
+  { token_type: Preprocessor, from: start, to: self.pos, }
 }
 
 ///|
@@ -415,13 +415,13 @@ pub fn CsharpTokenizer::next_token(self : CsharpTokenizer) -> CsharpToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comments
@@ -432,7 +432,7 @@ pub fn CsharpTokenizer::next_token(self : CsharpTokenizer) -> CsharpToken? {
         self.pos += 1
       }
       let token_type = if is_doc { DocComment } else { LineComment }
-      return Some({ token_type, from: start, to: self.pos })
+      return Some({ token_type, from: start, to: self.pos, })
     } else if self.peek_at(1) == Some('*') {
       self.pos += 2
       while self.pos < self.len {
@@ -442,7 +442,7 @@ pub fn CsharpTokenizer::next_token(self : CsharpTokenizer) -> CsharpToken? {
         }
         self.pos += 1
       }
-      return Some({ token_type: BlockComment, from: start, to: self.pos })
+      return Some({ token_type: BlockComment, from: start, to: self.pos, })
     }
   }
 
@@ -465,7 +465,7 @@ pub fn CsharpTokenizer::next_token(self : CsharpTokenizer) -> CsharpToken? {
   if c == '[' {
     // Check if this looks like an attribute
     self.pos += 1
-    return Some({ token_type: BracketOpen, from: start, to: self.pos })
+    return Some({ token_type: BracketOpen, from: start, to: self.pos, })
   }
 
   // String
@@ -501,45 +501,45 @@ pub fn CsharpTokenizer::next_token(self : CsharpTokenizer) -> CsharpToken? {
     let three_char = two_char + c3.to_string()
     if three_char == "<<=" || three_char == ">>=" || three_char == "??=" {
       self.pos += 3
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
   }
   match two_char {
     "=>" => {
       self.pos += 2
-      return Some({ token_type: Lambda, from: start, to: self.pos })
+      return Some({ token_type: Lambda, from: start, to: self.pos, })
     }
     "->" => {
       self.pos += 2
-      return Some({ token_type: Arrow, from: start, to: self.pos })
+      return Some({ token_type: Arrow, from: start, to: self.pos, })
     }
     "??" => {
       self.pos += 2
-      return Some({ token_type: NullCoalesce, from: start, to: self.pos })
+      return Some({ token_type: NullCoalesce, from: start, to: self.pos, })
     }
     "?." | "?[" => {
       self.pos += 2
-      return Some({ token_type: NullConditional, from: start, to: self.pos })
+      return Some({ token_type: NullConditional, from: start, to: self.pos, })
     }
     "==" | "!=" | "<=" | ">=" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     "&&" | "||" => {
       self.pos += 2
-      return Some({ token_type: Logical, from: start, to: self.pos })
+      return Some({ token_type: Logical, from: start, to: self.pos, })
     }
     "++" | "--" => {
       self.pos += 2
-      return Some({ token_type: Increment, from: start, to: self.pos })
+      return Some({ token_type: Increment, from: start, to: self.pos, })
     }
     "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" => {
       self.pos += 2
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     "<<" | ">>" => {
       self.pos += 2
-      return Some({ token_type: Bitwise, from: start, to: self.pos })
+      return Some({ token_type: Bitwise, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -564,7 +564,7 @@ pub fn CsharpTokenizer::next_token(self : CsharpTokenizer) -> CsharpToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

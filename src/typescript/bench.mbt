@@ -23,7 +23,7 @@ fn generate_function_ts() -> String {
 
 ///|
 /// Generate class with methods
-fn generate_class_ts(methods : Int) -> String {
+fn generate_class_ts(methods : Int32) -> String {
   let buf = StringBuilder()
   buf.write_string("class MyClass {\n")
   for i = 0; i < methods; i = i + 1 {
@@ -39,7 +39,7 @@ fn generate_class_ts(methods : Int) -> String {
 
 ///|
 /// Generate JSX component
-fn generate_jsx_ts(elements : Int) -> String {
+fn generate_jsx_ts(elements : Int32) -> String {
   let buf = StringBuilder()
   buf.write_string("const App = () => {\n")
   buf.write_string("  return (\n")
@@ -59,7 +59,7 @@ fn generate_jsx_ts(elements : Int) -> String {
 
 ///|
 /// Generate imports
-fn generate_imports_ts(count : Int) -> String {
+fn generate_imports_ts(count : Int32) -> String {
   let buf = StringBuilder()
   for i = 0; i < count; i = i + 1 {
     buf.write_string("import { Module")

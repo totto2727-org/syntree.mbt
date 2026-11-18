@@ -361,3 +361,6 @@ test "rust: highlight_to_html produces HTML" {
   assert_true(html.contains("let"))
   assert_true(html.contains("42"))
 }
+
+///|
+using @rust {type RustTokenizer, highlight_rust, highlight_rust_to_html}

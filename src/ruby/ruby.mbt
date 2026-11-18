@@ -90,8 +90,8 @@ pub impl Show for RubyTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct RubyToken {
   token_type : RubyTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -109,8 +109,8 @@ pub impl Show for RubyToken with fn output(self, logger) {
 pub(all) struct RubyTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -135,11 +135,11 @@ let ruby_modifiers : Array[String] = [
 ///|
 pub fn RubyTokenizer::new(input : String) -> RubyTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn RubyTokenizer::peek_at(self : RubyTokenizer, offset : Int) -> Char? {
+fn RubyTokenizer::peek_at(self : RubyTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -178,7 +178,7 @@ fn RubyTokenizer::read_string(self : RubyTokenizer, quote : Char) -> RubyToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -202,7 +202,7 @@ fn RubyTokenizer::read_percent_string(self : RubyTokenizer) -> RubyToken {
     }
   }
   if self.pos >= self.len {
-    return { token_type: String, from: start, to: self.pos }
+    return { token_type: String, from: start, to: self.pos, }
   }
   let open_delim = self.chars[self.pos]
   let close_delim = match open_delim {
@@ -228,7 +228,7 @@ fn RubyTokenizer::read_percent_string(self : RubyTokenizer) -> RubyToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -255,7 +255,7 @@ fn RubyTokenizer::read_regex(self : RubyTokenizer) -> RubyToken {
       self.pos += 1
     }
   }
-  { token_type: Regex, from: start, to: self.pos }
+  { token_type: Regex, from: start, to: self.pos, }
 }
 
 ///|
@@ -291,7 +291,7 @@ fn RubyTokenizer::read_symbol(self : RubyTokenizer) -> RubyToken {
       }
     }
   }
-  { token_type: Symbol, from: start, to: self.pos }
+  { token_type: Symbol, from: start, to: self.pos, }
 }
 
 ///|
@@ -312,7 +312,7 @@ fn RubyTokenizer::read_number(self : RubyTokenizer) -> RubyToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'b' || next == 'B' {
       self.pos += 2
       while self.pos < self.len {
@@ -323,7 +323,7 @@ fn RubyTokenizer::read_number(self : RubyTokenizer) -> RubyToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'o' || next == 'O' || (next >= '0' && next <= '7') {
       self.pos += 1
       if next == 'o' || next == 'O' {
@@ -337,7 +337,7 @@ fn RubyTokenizer::read_number(self : RubyTokenizer) -> RubyToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -372,7 +372,7 @@ fn RubyTokenizer::read_number(self : RubyTokenizer) -> RubyToken {
     (self.chars[self.pos] == 'r' || self.chars[self.pos] == 'i') {
     self.pos += 1
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -404,7 +404,7 @@ fn RubyTokenizer::read_identifier(self : RubyTokenizer) -> RubyToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -422,7 +422,7 @@ fn RubyTokenizer::read_variable(
   while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -443,13 +443,13 @@ pub fn RubyTokenizer::next_token(self : RubyTokenizer) -> RubyToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comment
@@ -457,7 +457,7 @@ pub fn RubyTokenizer::next_token(self : RubyTokenizer) -> RubyToken? {
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return Some({ token_type: Comment, from: start, to: self.pos })
+    return Some({ token_type: Comment, from: start, to: self.pos, })
   }
 
   // Strings
@@ -501,7 +501,7 @@ pub fn RubyTokenizer::next_token(self : RubyTokenizer) -> RubyToken? {
     let next = self.chars[self.pos + 1]
     if next == ':' {
       self.pos += 2
-      return Some({ token_type: DoubleColon, from: start, to: self.pos })
+      return Some({ token_type: DoubleColon, from: start, to: self.pos, })
     }
     if is_id_start(next) || next == '"' || next == '\'' {
       return Some(self.read_symbol())
@@ -545,33 +545,33 @@ pub fn RubyTokenizer::next_token(self : RubyTokenizer) -> RubyToken? {
     if three_char == "..." || three_char == "<=>" || three_char == "**=" {
       self.pos += 3
       let token_type = if three_char == "..." { Range } else { Operator }
-      return Some({ token_type, from: start, to: self.pos })
+      return Some({ token_type, from: start, to: self.pos, })
     }
   }
   match two_char {
     ".." => {
       self.pos += 2
-      return Some({ token_type: Range, from: start, to: self.pos })
+      return Some({ token_type: Range, from: start, to: self.pos, })
     }
     "**" | "<<" | ">>" => {
       self.pos += 2
-      return Some({ token_type: Operator, from: start, to: self.pos })
+      return Some({ token_type: Operator, from: start, to: self.pos, })
     }
     "==" | "!=" | "<=" | ">=" | "=~" | "!~" | "===" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     "&&" | "||" => {
       self.pos += 2
-      return Some({ token_type: Logical, from: start, to: self.pos })
+      return Some({ token_type: Logical, from: start, to: self.pos, })
     }
     "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "||=" | "&&=" => {
       self.pos += 2
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     "->" | "=>" => {
       self.pos += 2
-      return Some({ token_type: Operator, from: start, to: self.pos })
+      return Some({ token_type: Operator, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -598,7 +598,7 @@ pub fn RubyTokenizer::next_token(self : RubyTokenizer) -> RubyToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

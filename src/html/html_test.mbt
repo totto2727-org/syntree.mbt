@@ -272,3 +272,6 @@ test "edge: mixed case doctype" {
   let tokens = tokenizer.tokenize_all()
   assert_eq(tokens[0].token_type, Doctype)
 }
+
+///|
+using @html {type HtmlTokenizer, highlight_html, highlight_html_to_html}

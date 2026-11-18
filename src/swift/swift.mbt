@@ -82,8 +82,8 @@ pub impl Show for SwiftTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct SwiftToken {
   token_type : SwiftTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -101,8 +101,8 @@ pub impl Show for SwiftToken with fn output(self, logger) {
 pub(all) struct SwiftTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -128,11 +128,11 @@ let swift_modifiers : Array[String] = [
 ///|
 pub fn SwiftTokenizer::new(input : String) -> SwiftTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn SwiftTokenizer::peek_at(self : SwiftTokenizer, offset : Int) -> Char? {
+fn SwiftTokenizer::peek_at(self : SwiftTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -186,7 +186,7 @@ fn SwiftTokenizer::read_string(self : SwiftTokenizer) -> SwiftToken {
     }
   }
   let token_type = if is_multiline { MultilineString } else { String }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -212,7 +212,7 @@ fn SwiftTokenizer::read_number(self : SwiftTokenizer) -> SwiftToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -241,7 +241,7 @@ fn SwiftTokenizer::read_number(self : SwiftTokenizer) -> SwiftToken {
       self.pos += 1
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -265,7 +265,7 @@ fn SwiftTokenizer::read_identifier(self : SwiftTokenizer) -> SwiftToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -286,13 +286,13 @@ pub fn SwiftTokenizer::next_token(self : SwiftTokenizer) -> SwiftToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comments
@@ -303,7 +303,7 @@ pub fn SwiftTokenizer::next_token(self : SwiftTokenizer) -> SwiftToken? {
         self.pos += 1
       }
       let token_type = if is_doc { DocComment } else { LineComment }
-      return Some({ token_type, from: start, to: self.pos })
+      return Some({ token_type, from: start, to: self.pos, })
     } else if self.peek_at(1) == Some('*') {
       self.pos += 2
       while self.pos < self.len {
@@ -313,7 +313,7 @@ pub fn SwiftTokenizer::next_token(self : SwiftTokenizer) -> SwiftToken? {
         }
         self.pos += 1
       }
-      return Some({ token_type: BlockComment, from: start, to: self.pos })
+      return Some({ token_type: BlockComment, from: start, to: self.pos, })
     }
   }
 
@@ -333,7 +333,7 @@ pub fn SwiftTokenizer::next_token(self : SwiftTokenizer) -> SwiftToken? {
     while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
       self.pos += 1
     }
-    return Some({ token_type: Attribute, from: start, to: self.pos })
+    return Some({ token_type: Attribute, from: start, to: self.pos, })
   }
 
   // Identifier
@@ -354,25 +354,25 @@ pub fn SwiftTokenizer::next_token(self : SwiftTokenizer) -> SwiftToken? {
     let three_char = two_char + c3.to_string()
     if three_char == "..." || three_char == "..<" {
       self.pos += 3
-      return Some({ token_type: Range, from: start, to: self.pos })
+      return Some({ token_type: Range, from: start, to: self.pos, })
     }
   }
   match two_char {
     "->" | "=>" => {
       self.pos += 2
-      return Some({ token_type: Arrow, from: start, to: self.pos })
+      return Some({ token_type: Arrow, from: start, to: self.pos, })
     }
     "==" | "!=" | "<=" | ">=" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     "&&" | "||" => {
       self.pos += 2
-      return Some({ token_type: Logical, from: start, to: self.pos })
+      return Some({ token_type: Logical, from: start, to: self.pos, })
     }
     "+=" | "-=" | "*=" | "/=" | "%=" => {
       self.pos += 2
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -397,7 +397,7 @@ pub fn SwiftTokenizer::next_token(self : SwiftTokenizer) -> SwiftToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

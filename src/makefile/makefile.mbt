@@ -50,8 +50,8 @@ pub impl Show for MakefileTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct MakefileToken {
   token_type : MakefileTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -69,8 +69,8 @@ pub impl Show for MakefileToken with fn output(self, logger) {
 pub(all) struct MakefileTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   priv mut at_line_start : Bool
   priv mut in_recipe : Bool
 }
@@ -96,7 +96,10 @@ pub fn MakefileTokenizer::new(input : String) -> MakefileTokenizer {
 }
 
 ///|
-fn MakefileTokenizer::peek_at(self : MakefileTokenizer, offset : Int) -> Char? {
+fn MakefileTokenizer::peek_at(
+  self : MakefileTokenizer,
+  offset : Int32,
+) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -149,7 +152,7 @@ fn MakefileTokenizer::read_variable_ref(
       self.pos += 1 // single char variable
     }
   }
-  { token_type: VariableRef, from: start, to: self.pos }
+  { token_type: VariableRef, from: start, to: self.pos, }
 }
 
 ///|
@@ -170,7 +173,7 @@ fn MakefileTokenizer::read_string(
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -185,7 +188,7 @@ fn MakefileTokenizer::read_name(self : MakefileTokenizer) -> MakefileToken {
   } else {
     Variable
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -199,7 +202,7 @@ fn MakefileTokenizer::read_recipe_line(
     }
     self.pos += 1
   }
-  { token_type: Recipe, from: start, to: self.pos }
+  { token_type: Recipe, from: start, to: self.pos, }
 }
 
 ///|
@@ -217,7 +220,7 @@ pub fn MakefileTokenizer::next_token(
     self.pos += 1
     self.at_line_start = false
     self.in_recipe = true
-    return Some({ token_type: Tab, from: start, to: self.pos })
+    return Some({ token_type: Tab, from: start, to: self.pos, })
   }
 
   // Recipe line content
@@ -236,7 +239,7 @@ pub fn MakefileTokenizer::next_token(
       }
     }
     self.at_line_start = false
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
@@ -244,7 +247,7 @@ pub fn MakefileTokenizer::next_token(
     self.pos += 1
     self.at_line_start = true
     self.in_recipe = false
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comment
@@ -252,7 +255,7 @@ pub fn MakefileTokenizer::next_token(
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return Some({ token_type: Comment, from: start, to: self.pos })
+    return Some({ token_type: Comment, from: start, to: self.pos, })
   }
 
   // Variable reference
@@ -271,49 +274,49 @@ pub fn MakefileTokenizer::next_token(
   if c == ':' && self.peek_at(1) == Some('=') {
     self.pos += 2
     self.at_line_start = false
-    return Some({ token_type: Assignment, from: start, to: self.pos })
+    return Some({ token_type: Assignment, from: start, to: self.pos, })
   }
   if c == '+' && self.peek_at(1) == Some('=') {
     self.pos += 2
     self.at_line_start = false
-    return Some({ token_type: Assignment, from: start, to: self.pos })
+    return Some({ token_type: Assignment, from: start, to: self.pos, })
   }
   if c == '?' && self.peek_at(1) == Some('=') {
     self.pos += 2
     self.at_line_start = false
-    return Some({ token_type: Assignment, from: start, to: self.pos })
+    return Some({ token_type: Assignment, from: start, to: self.pos, })
   }
   if c == '!' && self.peek_at(1) == Some('=') {
     self.pos += 2
     self.at_line_start = false
-    return Some({ token_type: Assignment, from: start, to: self.pos })
+    return Some({ token_type: Assignment, from: start, to: self.pos, })
   }
 
   // Single-char tokens
   if c == ':' {
     self.pos += 1
     self.at_line_start = false
-    return Some({ token_type: Colon, from: start, to: self.pos })
+    return Some({ token_type: Colon, from: start, to: self.pos, })
   }
   if c == ';' {
     self.pos += 1
     self.at_line_start = false
     self.in_recipe = true
-    return Some({ token_type: Semicolon, from: start, to: self.pos })
+    return Some({ token_type: Semicolon, from: start, to: self.pos, })
   }
   if c == '|' {
     self.pos += 1
     self.at_line_start = false
-    return Some({ token_type: Pipe, from: start, to: self.pos })
+    return Some({ token_type: Pipe, from: start, to: self.pos, })
   }
   if c == '=' {
     self.pos += 1
     self.at_line_start = false
-    return Some({ token_type: Assignment, from: start, to: self.pos })
+    return Some({ token_type: Assignment, from: start, to: self.pos, })
   }
   if c == '\\' && self.peek_at(1) == Some('\n') {
     self.pos += 2
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Name (variable, target, prerequisite)
@@ -326,11 +329,11 @@ pub fn MakefileTokenizer::next_token(
   if c == '%' || c == '*' || c == '@' || c == '<' || c == '>' || c == '/' {
     self.pos += 1
     self.at_line_start = false
-    return Some({ token_type: Operator, from: start, to: self.pos })
+    return Some({ token_type: Operator, from: start, to: self.pos, })
   }
   self.pos += 1
   self.at_line_start = false
-  Some({ token_type: Unknown, from: start, to: self.pos })
+  Some({ token_type: Unknown, from: start, to: self.pos, })
 }
 
 ///|

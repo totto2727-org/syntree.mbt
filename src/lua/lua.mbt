@@ -74,8 +74,8 @@ pub impl Show for LuaTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct LuaToken {
   token_type : LuaTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -93,8 +93,8 @@ pub impl Show for LuaToken with fn output(self, logger) {
 pub(all) struct LuaTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -106,11 +106,11 @@ let lua_keywords : Array[String] = [
 ///|
 pub fn LuaTokenizer::new(input : String) -> LuaTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn LuaTokenizer::peek_at(self : LuaTokenizer, offset : Int) -> Char? {
+fn LuaTokenizer::peek_at(self : LuaTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -135,7 +135,7 @@ fn is_digit(c : Char) -> Bool {
 }
 
 ///|
-fn LuaTokenizer::count_equals(self : LuaTokenizer) -> Int {
+fn LuaTokenizer::count_equals(self : LuaTokenizer) -> Int32 {
   let mut count = 0
   while self.pos + count < self.len && self.chars[self.pos + count] == '=' {
     count += 1
@@ -167,7 +167,7 @@ fn LuaTokenizer::read_long_string(self : LuaTokenizer) -> LuaToken {
       }
     }
   }
-  { token_type: LongString, from: start, to: self.pos }
+  { token_type: LongString, from: start, to: self.pos, }
 }
 
 ///|
@@ -187,7 +187,7 @@ fn LuaTokenizer::read_string(self : LuaTokenizer, quote : Char) -> LuaToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -219,7 +219,7 @@ fn LuaTokenizer::read_number(self : LuaTokenizer) -> LuaToken {
           self.pos += 1
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len && is_digit(self.chars[self.pos]) {
@@ -245,7 +245,7 @@ fn LuaTokenizer::read_number(self : LuaTokenizer) -> LuaToken {
       self.pos += 1
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -266,7 +266,7 @@ fn LuaTokenizer::read_identifier(self : LuaTokenizer) -> LuaToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -287,13 +287,13 @@ fn LuaTokenizer::read_long_comment(self : LuaTokenizer) -> LuaToken {
             self.pos < self.len &&
             self.chars[self.pos] == ']' {
             self.pos += 1
-            return { token_type: BlockComment, from: start, to: self.pos }
+            return { token_type: BlockComment, from: start, to: self.pos, }
           }
         } else {
           self.pos += 1
         }
       }
-      return { token_type: BlockComment, from: start, to: self.pos }
+      return { token_type: BlockComment, from: start, to: self.pos, }
     }
     self.pos = start + 2 // reset to after --
   }
@@ -301,7 +301,7 @@ fn LuaTokenizer::read_long_comment(self : LuaTokenizer) -> LuaToken {
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: LineComment, from: start, to: self.pos }
+  { token_type: LineComment, from: start, to: self.pos, }
 }
 
 ///|
@@ -322,13 +322,13 @@ pub fn LuaTokenizer::next_token(self : LuaTokenizer) -> LuaToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comment
@@ -365,23 +365,23 @@ pub fn LuaTokenizer::next_token(self : LuaTokenizer) -> LuaToken? {
   match two_char {
     "::" => {
       self.pos += 2
-      return Some({ token_type: DoubleColon, from: start, to: self.pos })
+      return Some({ token_type: DoubleColon, from: start, to: self.pos, })
     }
     ".." => {
       if self.peek_at(2) == Some('.') {
         self.pos += 3
-        return Some({ token_type: Vararg, from: start, to: self.pos })
+        return Some({ token_type: Vararg, from: start, to: self.pos, })
       }
       self.pos += 2
-      return Some({ token_type: Concat, from: start, to: self.pos })
+      return Some({ token_type: Concat, from: start, to: self.pos, })
     }
     "==" | "~=" | "<=" | ">=" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     "<<" | ">>" | "//" => {
       self.pos += 2
-      return Some({ token_type: Operator, from: start, to: self.pos })
+      return Some({ token_type: Operator, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -405,7 +405,7 @@ pub fn LuaTokenizer::next_token(self : LuaTokenizer) -> LuaToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

@@ -90,8 +90,8 @@ pub impl Show for ScalaTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct ScalaToken {
   token_type : ScalaTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -109,8 +109,8 @@ pub impl Show for ScalaToken with fn output(self, logger) {
 pub(all) struct ScalaTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -135,11 +135,11 @@ let scala_modifiers : Array[String] = [
 ///|
 pub fn ScalaTokenizer::new(input : String) -> ScalaTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn ScalaTokenizer::peek_at(self : ScalaTokenizer, offset : Int) -> Char? {
+fn ScalaTokenizer::peek_at(self : ScalaTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -203,7 +203,7 @@ fn ScalaTokenizer::read_string(self : ScalaTokenizer) -> ScalaToken {
       }
       self.pos += 1
     }
-    return { token_type: MultilineString, from: start, to: self.pos }
+    return { token_type: MultilineString, from: start, to: self.pos, }
   }
   while self.pos < self.len {
     let c = self.chars[self.pos]
@@ -216,7 +216,7 @@ fn ScalaTokenizer::read_string(self : ScalaTokenizer) -> ScalaToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -229,7 +229,7 @@ fn ScalaTokenizer::read_interpolated_string(
     self.pos += 1
   }
   if self.pos >= self.len || self.chars[self.pos] != '"' {
-    return { token_type: Identifier, from: start, to: self.pos }
+    return { token_type: Identifier, from: start, to: self.pos, }
   }
   self.pos += 1
 
@@ -260,7 +260,7 @@ fn ScalaTokenizer::read_interpolated_string(
       }
     }
   }
-  { token_type: StringInterp, from: start, to: self.pos }
+  { token_type: StringInterp, from: start, to: self.pos, }
 }
 
 ///|
@@ -274,10 +274,10 @@ fn ScalaTokenizer::read_char(self : ScalaTokenizer) -> ScalaToken {
     }
     // If not followed by ', it's a symbol
     if self.pos >= self.len || self.chars[self.pos] != '\'' {
-      return { token_type: Symbol, from: start, to: self.pos }
+      return { token_type: Symbol, from: start, to: self.pos, }
     }
     self.pos += 1
-    return { token_type: Char, from: start, to: self.pos }
+    return { token_type: Char, from: start, to: self.pos, }
   }
   if self.pos < self.len && self.chars[self.pos] == '\\' {
     self.pos += 2
@@ -287,7 +287,7 @@ fn ScalaTokenizer::read_char(self : ScalaTokenizer) -> ScalaToken {
   if self.pos < self.len && self.chars[self.pos] == '\'' {
     self.pos += 1
   }
-  { token_type: Char, from: start, to: self.pos }
+  { token_type: Char, from: start, to: self.pos, }
 }
 
 ///|
@@ -309,7 +309,7 @@ fn ScalaTokenizer::read_number(self : ScalaTokenizer) -> ScalaToken {
         }
       }
       self.read_number_suffix()
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -339,7 +339,7 @@ fn ScalaTokenizer::read_number(self : ScalaTokenizer) -> ScalaToken {
     }
   }
   self.read_number_suffix()
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -386,7 +386,7 @@ fn ScalaTokenizer::read_identifier(self : ScalaTokenizer) -> ScalaToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -404,7 +404,7 @@ fn ScalaTokenizer::read_operator(self : ScalaTokenizer) -> ScalaToken {
     "=" | "+=" | "-=" | "*=" | "/=" | "%=" => Assignment
     _ => Operator
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -425,13 +425,13 @@ pub fn ScalaTokenizer::next_token(self : ScalaTokenizer) -> ScalaToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comments
@@ -440,7 +440,7 @@ pub fn ScalaTokenizer::next_token(self : ScalaTokenizer) -> ScalaToken? {
       while self.pos < self.len && self.chars[self.pos] != '\n' {
         self.pos += 1
       }
-      return Some({ token_type: LineComment, from: start, to: self.pos })
+      return Some({ token_type: LineComment, from: start, to: self.pos, })
     } else if self.peek_at(1) == Some('*') {
       self.pos += 2
       let is_doc = self.pos < self.len && self.chars[self.pos] == '*'
@@ -452,7 +452,7 @@ pub fn ScalaTokenizer::next_token(self : ScalaTokenizer) -> ScalaToken? {
         self.pos += 1
       }
       let token_type = if is_doc { DocComment } else { BlockComment }
-      return Some({ token_type, from: start, to: self.pos })
+      return Some({ token_type, from: start, to: self.pos, })
     }
   }
 
@@ -462,7 +462,7 @@ pub fn ScalaTokenizer::next_token(self : ScalaTokenizer) -> ScalaToken? {
     while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
       self.pos += 1
     }
-    return Some({ token_type: Annotation, from: start, to: self.pos })
+    return Some({ token_type: Annotation, from: start, to: self.pos, })
   }
 
   // String
@@ -494,13 +494,13 @@ pub fn ScalaTokenizer::next_token(self : ScalaTokenizer) -> ScalaToken? {
     if self.pos < self.len {
       self.pos += 1
     }
-    return Some({ token_type: Identifier, from: start, to: self.pos })
+    return Some({ token_type: Identifier, from: start, to: self.pos, })
   }
 
   // Guard pattern
   if c == '|' && self.peek_at(1) != Some('|') && self.peek_at(1) != Some('=') {
     self.pos += 1
-    return Some({ token_type: Guard, from: start, to: self.pos })
+    return Some({ token_type: Guard, from: start, to: self.pos, })
   }
 
   // Operators
@@ -522,7 +522,7 @@ pub fn ScalaTokenizer::next_token(self : ScalaTokenizer) -> ScalaToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

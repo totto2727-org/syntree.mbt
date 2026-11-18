@@ -78,8 +78,8 @@ pub impl Show for PythonTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct PythonToken {
   token_type : PythonTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -97,8 +97,8 @@ pub impl Show for PythonToken with fn output(self, logger) {
 pub(all) struct PythonTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -128,11 +128,11 @@ let python_builtin_types : Array[String] = [
 ///|
 pub fn PythonTokenizer::new(input : String) -> PythonTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn PythonTokenizer::peek_at(self : PythonTokenizer, offset : Int) -> Char? {
+fn PythonTokenizer::peek_at(self : PythonTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -197,7 +197,7 @@ fn PythonTokenizer::read_string(
     }
   }
   let token_type = if is_fstring { FString } else { String }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -211,7 +211,7 @@ fn PythonTokenizer::read_number(self : PythonTokenizer) -> PythonToken {
             (is_hex_digit(self.chars[self.pos]) || self.chars[self.pos] == '_') {
         self.pos += 1
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'b' || next == 'B' {
       self.pos += 2
       while self.pos < self.len &&
@@ -222,7 +222,7 @@ fn PythonTokenizer::read_number(self : PythonTokenizer) -> PythonToken {
             ) {
         self.pos += 1
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'o' || next == 'O' {
       self.pos += 2
       while self.pos < self.len {
@@ -233,7 +233,7 @@ fn PythonTokenizer::read_number(self : PythonTokenizer) -> PythonToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -274,7 +274,7 @@ fn PythonTokenizer::read_number(self : PythonTokenizer) -> PythonToken {
     (self.chars[self.pos] == 'j' || self.chars[self.pos] == 'J') {
     self.pos += 1
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -320,7 +320,7 @@ fn PythonTokenizer::read_identifier(self : PythonTokenizer) -> PythonToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -341,13 +341,13 @@ pub fn PythonTokenizer::next_token(self : PythonTokenizer) -> PythonToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comment
@@ -355,7 +355,7 @@ pub fn PythonTokenizer::next_token(self : PythonTokenizer) -> PythonToken? {
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return Some({ token_type: Comment, from: start, to: self.pos })
+    return Some({ token_type: Comment, from: start, to: self.pos, })
   }
 
   // String
@@ -385,7 +385,7 @@ pub fn PythonTokenizer::next_token(self : PythonTokenizer) -> PythonToken? {
         }
       }
     }
-    return Some({ token_type: Decorator, from: start, to: self.pos })
+    return Some({ token_type: Decorator, from: start, to: self.pos, })
   }
 
   // Identifier
@@ -396,7 +396,7 @@ pub fn PythonTokenizer::next_token(self : PythonTokenizer) -> PythonToken? {
   // Ellipsis
   if c == '.' && self.peek_at(1) == Some('.') && self.peek_at(2) == Some('.') {
     self.pos += 3
-    return Some({ token_type: Ellipsis, from: start, to: self.pos })
+    return Some({ token_type: Ellipsis, from: start, to: self.pos, })
   }
 
   // Multi-char operators
@@ -415,37 +415,37 @@ pub fn PythonTokenizer::next_token(self : PythonTokenizer) -> PythonToken? {
       three_char == "**=" ||
       three_char == "//=" {
       self.pos += 3
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
   }
   match two_char {
     ":=" => {
       self.pos += 2
-      return Some({ token_type: Walrus, from: start, to: self.pos })
+      return Some({ token_type: Walrus, from: start, to: self.pos, })
     }
     "->" => {
       self.pos += 2
-      return Some({ token_type: Arrow, from: start, to: self.pos })
+      return Some({ token_type: Arrow, from: start, to: self.pos, })
     }
     "==" | "!=" | "<=" | ">=" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" => {
       self.pos += 2
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     "**" | "//" => {
       self.pos += 2
-      return Some({ token_type: Operator, from: start, to: self.pos })
+      return Some({ token_type: Operator, from: start, to: self.pos, })
     }
     "<<" | ">>" => {
       self.pos += 2
-      return Some({ token_type: Bitwise, from: start, to: self.pos })
+      return Some({ token_type: Bitwise, from: start, to: self.pos, })
     }
     "&&" | "||" => {
       self.pos += 2
-      return Some({ token_type: Logical, from: start, to: self.pos })
+      return Some({ token_type: Logical, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -469,7 +469,7 @@ pub fn PythonTokenizer::next_token(self : PythonTokenizer) -> PythonToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

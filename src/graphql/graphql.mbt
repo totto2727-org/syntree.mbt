@@ -76,8 +76,8 @@ pub impl Show for GraphqlTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct GraphqlToken {
   token_type : GraphqlTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -95,8 +95,8 @@ pub impl Show for GraphqlToken with fn output(self, logger) {
 pub(all) struct GraphqlTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -115,11 +115,11 @@ let graphql_directive_keywords : Array[String] = ["directive", "repeatable"]
 ///|
 pub fn GraphqlTokenizer::new(input : String) -> GraphqlTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn GraphqlTokenizer::peek_at(self : GraphqlTokenizer, offset : Int) -> Char? {
+fn GraphqlTokenizer::peek_at(self : GraphqlTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -159,7 +159,7 @@ fn GraphqlTokenizer::read_string(self : GraphqlTokenizer) -> GraphqlToken {
       }
       self.pos += 1
     }
-    return { token_type: BlockString, from: start, to: self.pos }
+    return { token_type: BlockString, from: start, to: self.pos, }
   }
   self.pos += 1
   while self.pos < self.len {
@@ -175,7 +175,7 @@ fn GraphqlTokenizer::read_string(self : GraphqlTokenizer) -> GraphqlToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -215,7 +215,7 @@ fn GraphqlTokenizer::read_number(self : GraphqlTokenizer) -> GraphqlToken {
       self.pos += 1
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -241,7 +241,7 @@ fn GraphqlTokenizer::read_name(self : GraphqlTokenizer) -> GraphqlToken {
   } else {
     Name
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -262,13 +262,13 @@ pub fn GraphqlTokenizer::next_token(self : GraphqlTokenizer) -> GraphqlToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comment
@@ -276,7 +276,7 @@ pub fn GraphqlTokenizer::next_token(self : GraphqlTokenizer) -> GraphqlToken? {
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return Some({ token_type: Comment, from: start, to: self.pos })
+    return Some({ token_type: Comment, from: start, to: self.pos, })
   }
 
   // String
@@ -295,7 +295,7 @@ pub fn GraphqlTokenizer::next_token(self : GraphqlTokenizer) -> GraphqlToken? {
     while self.pos < self.len && is_name_char(self.chars[self.pos]) {
       self.pos += 1
     }
-    return Some({ token_type: Variable, from: start, to: self.pos })
+    return Some({ token_type: Variable, from: start, to: self.pos, })
   }
 
   // Directive
@@ -304,13 +304,13 @@ pub fn GraphqlTokenizer::next_token(self : GraphqlTokenizer) -> GraphqlToken? {
     while self.pos < self.len && is_name_char(self.chars[self.pos]) {
       self.pos += 1
     }
-    return Some({ token_type: Directive, from: start, to: self.pos })
+    return Some({ token_type: Directive, from: start, to: self.pos, })
   }
 
   // Spread
   if c == '.' && self.peek_at(1) == Some('.') && self.peek_at(2) == Some('.') {
     self.pos += 3
-    return Some({ token_type: Spread, from: start, to: self.pos })
+    return Some({ token_type: Spread, from: start, to: self.pos, })
   }
 
   // Name
@@ -334,7 +334,7 @@ pub fn GraphqlTokenizer::next_token(self : GraphqlTokenizer) -> GraphqlToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

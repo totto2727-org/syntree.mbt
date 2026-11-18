@@ -572,3 +572,6 @@ test "highlight_moonbit handles $| strings" {
   let tags = tokens.map(fn(t) { t.tag })
   assert_true(tags.contains(@syntree.HighlightTag::String))
 }
+
+///|
+using @moonbit {type MbtTokenizer, highlight_moonbit, highlight_moonbit_to_html}

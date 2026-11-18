@@ -816,7 +816,7 @@ test "highlight: theme name appears in class" {
 // =============================================================================
 
 ///|
-fn count_occurrences(s : String, pattern : String) -> Int {
+fn count_occurrences(s : String, pattern : String) -> Int32 {
   let mut count = 0
   let mut pos = 0
   let chars = s.to_array()
@@ -839,4 +839,19 @@ fn count_occurrences(s : String, pattern : String) -> Int {
     }
   }
   count
+}
+
+///|
+using @highlight {
+  github_dark,
+  github_light,
+  highlight_bash,
+  highlight_css,
+  highlight_html,
+  highlight_json,
+  highlight_moonbit,
+  highlight_rust,
+  highlight_typescript,
+  one_dark_pro,
+  vitesse_dark,
 }

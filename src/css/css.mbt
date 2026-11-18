@@ -94,8 +94,8 @@ pub impl Show for CssTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct CssToken {
   token_type : CssTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -118,8 +118,8 @@ pub impl Show for CssToken with fn output(self, logger) {
 pub(all) struct CssTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   // Track context: are we in a selector or declaration block?
   priv mut in_block : Bool
   priv mut after_colon : Bool
@@ -157,7 +157,7 @@ fn CssTokenizer::_peek(self : CssTokenizer) -> Char? {
 
 ///|
 /// Peek character at offset
-fn CssTokenizer::peek_at(self : CssTokenizer, offset : Int) -> Char? {
+fn CssTokenizer::peek_at(self : CssTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -220,12 +220,12 @@ fn CssTokenizer::read_comment(self : CssTokenizer) -> CssToken {
     }
     self.pos += 1
   }
-  { token_type: Comment, from: start, to: self.pos }
+  { token_type: Comment, from: start, to: self.pos, }
 }
 
 ///|
 /// Read an identifier
-fn CssTokenizer::read_ident(self : CssTokenizer) -> (Int, Int) {
+fn CssTokenizer::read_ident(self : CssTokenizer) -> (Int32, Int32) {
   let start = self.pos
   while self.pos < self.len && is_ident_char(self.chars[self.pos]) {
     self.pos += 1
@@ -250,7 +250,7 @@ fn CssTokenizer::read_string(self : CssTokenizer) -> CssToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -272,7 +272,7 @@ fn CssTokenizer::read_number(self : CssTokenizer) -> CssToken {
       }
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -283,7 +283,7 @@ fn CssTokenizer::read_color(self : CssTokenizer) -> CssToken {
   while self.pos < self.len && is_hex_digit(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: Color, from: start, to: self.pos }
+  { token_type: Color, from: start, to: self.pos, }
 }
 
 ///|
@@ -294,14 +294,14 @@ fn CssTokenizer::read_unit(self : CssTokenizer) -> CssToken {
   // % is a single-char unit
   if self.pos < self.len && self.chars[self.pos] == '%' {
     self.pos += 1
-    return { token_type: Unit, from: start, to: self.pos }
+    return { token_type: Unit, from: start, to: self.pos, }
   }
 
   // Read identifier-like unit
   while self.pos < self.len && is_ident_char(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: Unit, from: start, to: self.pos }
+  { token_type: Unit, from: start, to: self.pos, }
 }
 
 ///|
@@ -351,7 +351,7 @@ fn CssTokenizer::read_url(self : CssTokenizer) -> CssToken {
   if self.pos < self.len && self.chars[self.pos] == ')' {
     self.pos += 1
   }
-  { token_type: Url, from: start, to: self.pos }
+  { token_type: Url, from: start, to: self.pos, }
 }
 
 ///|
@@ -388,7 +388,7 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
       '{' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceOpen, from: start, to: self.pos })
+        tokens.push({ token_type: BraceOpen, from: start, to: self.pos, })
         self.in_block = true
         self.after_colon = false
         continue
@@ -396,7 +396,7 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
       '}' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceClose, from: start, to: self.pos })
+        tokens.push({ token_type: BraceClose, from: start, to: self.pos, })
         self.in_block = false
         self.after_colon = false
         continue
@@ -404,25 +404,25 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
       '(' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: ParenOpen, from: start, to: self.pos })
+        tokens.push({ token_type: ParenOpen, from: start, to: self.pos, })
         continue
       }
       ')' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: ParenClose, from: start, to: self.pos })
+        tokens.push({ token_type: ParenClose, from: start, to: self.pos, })
         continue
       }
       '[' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BracketOpen, from: start, to: self.pos })
+        tokens.push({ token_type: BracketOpen, from: start, to: self.pos, })
         continue
       }
       ']' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BracketClose, from: start, to: self.pos })
+        tokens.push({ token_type: BracketClose, from: start, to: self.pos, })
         continue
       }
       ':' => {
@@ -433,15 +433,19 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
           // Read pseudo-element name
           if self.pos < self.len && is_ident_start(self.chars[self.pos]) {
             let (_, end) = self.read_ident()
-            tokens.push({ token_type: PseudoElement, from: start, to: end })
+            tokens.push({ token_type: PseudoElement, from: start, to: end, })
           } else {
-            tokens.push({ token_type: PseudoElement, from: start, to: self.pos })
+            tokens.push({
+              token_type: PseudoElement,
+              from: start,
+              to: self.pos,
+            })
           }
         } else if self.in_block && !self.after_colon {
           // Property-value separator
           let start = self.pos
           self.pos += 1
-          tokens.push({ token_type: Colon, from: start, to: self.pos })
+          tokens.push({ token_type: Colon, from: start, to: self.pos, })
           self.after_colon = true
         } else {
           // Pseudo-class
@@ -449,9 +453,9 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
           self.pos += 1
           if self.pos < self.len && is_ident_start(self.chars[self.pos]) {
             let (_, end) = self.read_ident()
-            tokens.push({ token_type: PseudoClass, from: start, to: end })
+            tokens.push({ token_type: PseudoClass, from: start, to: end, })
           } else {
-            tokens.push({ token_type: Colon, from: start, to: self.pos })
+            tokens.push({ token_type: Colon, from: start, to: self.pos, })
           }
         }
         continue
@@ -459,14 +463,14 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
       ';' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Semicolon, from: start, to: self.pos })
+        tokens.push({ token_type: Semicolon, from: start, to: self.pos, })
         self.after_colon = false
         continue
       }
       ',' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Comma, from: start, to: self.pos })
+        tokens.push({ token_type: Comma, from: start, to: self.pos, })
         continue
       }
       _ => ()
@@ -476,7 +480,7 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
     if c == '>' || c == '+' || c == '~' {
       let start = self.pos
       self.pos += 1
-      tokens.push({ token_type: Combinator, from: start, to: self.pos })
+      tokens.push({ token_type: Combinator, from: start, to: self.pos, })
       continue
     }
 
@@ -486,9 +490,9 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
       self.pos += 1
       if self.pos < self.len && is_ident_start(self.chars[self.pos]) {
         let (_, end) = self.read_ident()
-        tokens.push({ token_type: AtKeyword, from: start, to: end })
+        tokens.push({ token_type: AtKeyword, from: start, to: end, })
       } else {
-        tokens.push({ token_type: AtKeyword, from: start, to: self.pos })
+        tokens.push({ token_type: AtKeyword, from: start, to: self.pos, })
       }
       continue
     }
@@ -499,7 +503,7 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
       self.pos += 1
       if self.pos < self.len && is_ident_start(self.chars[self.pos]) {
         let (_, end) = self.read_ident()
-        tokens.push({ token_type: ClassSelector, from: start, to: end })
+        tokens.push({ token_type: ClassSelector, from: start, to: end, })
       }
       continue
     }
@@ -516,7 +520,7 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
         } else if is_ident_start(self.chars[self.pos]) {
           // ID selector
           let (_, end) = self.read_ident()
-          tokens.push({ token_type: IdSelector, from: start, to: end })
+          tokens.push({ token_type: IdSelector, from: start, to: end, })
         } else if is_hex_digit(self.chars[self.pos]) {
           // Color
           self.pos = start
@@ -530,7 +534,7 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
     if c == '*' {
       let start = self.pos
       self.pos += 1
-      tokens.push({ token_type: UniversalSelector, from: start, to: self.pos })
+      tokens.push({ token_type: UniversalSelector, from: start, to: self.pos, })
       continue
     }
 
@@ -565,9 +569,9 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
         let (_, word_end) = self.read_ident()
         // Simple check
         if word_end - word_start == 9 {
-          tokens.push({ token_type: Important, from: start, to: word_end })
+          tokens.push({ token_type: Important, from: start, to: word_end, })
         } else {
-          tokens.push({ token_type: Error, from: start, to: word_end })
+          tokens.push({ token_type: Error, from: start, to: word_end, })
         }
       }
       continue
@@ -584,17 +588,17 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
 
       // Check if followed by ( for function
       if self.pos < self.len && self.chars[self.pos] == '(' {
-        tokens.push({ token_type: Function, from: start, to: end })
+        tokens.push({ token_type: Function, from: start, to: end, })
         continue
       }
       if self.in_block {
         if self.after_colon {
-          tokens.push({ token_type: PropertyValue, from: start, to: end })
+          tokens.push({ token_type: PropertyValue, from: start, to: end, })
         } else {
-          tokens.push({ token_type: PropertyName, from: start, to: end })
+          tokens.push({ token_type: PropertyName, from: start, to: end, })
         }
       } else {
-        tokens.push({ token_type: TagSelector, from: start, to: end })
+        tokens.push({ token_type: TagSelector, from: start, to: end, })
       }
       continue
     }
@@ -602,7 +606,7 @@ pub fn CssTokenizer::tokenize_all(self : CssTokenizer) -> Array[CssToken] {
     // Unknown character
     let start = self.pos
     self.pos += 1
-    tokens.push({ token_type: Error, from: start, to: self.pos })
+    tokens.push({ token_type: Error, from: start, to: self.pos, })
   }
   tokens
 }

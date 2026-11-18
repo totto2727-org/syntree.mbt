@@ -40,8 +40,8 @@ pub impl Show for DockerfileTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct DockerfileToken {
   token_type : DockerfileTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -59,8 +59,8 @@ pub impl Show for DockerfileToken with fn output(self, logger) {
 pub(all) struct DockerfileTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   priv mut at_line_start : Bool
 }
 
@@ -73,13 +73,13 @@ let dockerfile_instructions : Array[String] = [
 ///|
 pub fn DockerfileTokenizer::new(input : String) -> DockerfileTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0, at_line_start: true }
+  { input, chars, len: chars.length(), pos: 0, at_line_start: true, }
 }
 
 ///|
 fn DockerfileTokenizer::peek_at(
   self : DockerfileTokenizer,
-  offset : Int,
+  offset : Int32,
 ) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
@@ -134,7 +134,7 @@ fn DockerfileTokenizer::read_string(
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -156,7 +156,7 @@ fn DockerfileTokenizer::read_variable(
       self.pos += 1
     }
   }
-  { token_type: Variable, from: start, to: self.pos }
+  { token_type: Variable, from: start, to: self.pos, }
 }
 
 ///|
@@ -174,7 +174,7 @@ fn DockerfileTokenizer::read_instruction(
   } else {
     Argument
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -187,7 +187,7 @@ fn DockerfileTokenizer::read_flag(
         (is_id_char(self.chars[self.pos]) || self.chars[self.pos] == '-') {
     self.pos += 1
   }
-  { token_type: Flag, from: start, to: self.pos }
+  { token_type: Flag, from: start, to: self.pos, }
 }
 
 ///|
@@ -212,7 +212,7 @@ fn DockerfileTokenizer::read_argument(
     }
     self.pos += 1
   }
-  { token_type: Argument, from: start, to: self.pos }
+  { token_type: Argument, from: start, to: self.pos, }
 }
 
 ///|
@@ -236,21 +236,21 @@ pub fn DockerfileTokenizer::next_token(
       }
     }
     self.at_line_start = false
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
     self.at_line_start = true
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Line continuation
   if c == '\\' && self.peek_at(1) == Some('\n') {
     self.pos += 2
     self.at_line_start = false
-    return Some({ token_type: Continuation, from: start, to: self.pos })
+    return Some({ token_type: Continuation, from: start, to: self.pos, })
   }
 
   // Comment
@@ -258,7 +258,7 @@ pub fn DockerfileTokenizer::next_token(
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return Some({ token_type: Comment, from: start, to: self.pos })
+    return Some({ token_type: Comment, from: start, to: self.pos, })
   }
 
   // String
@@ -277,7 +277,7 @@ pub fn DockerfileTokenizer::next_token(
   if c == '=' {
     self.pos += 1
     self.at_line_start = false
-    return Some({ token_type: Equals, from: start, to: self.pos })
+    return Some({ token_type: Equals, from: start, to: self.pos, })
   }
 
   // Flag
@@ -298,7 +298,7 @@ pub fn DockerfileTokenizer::next_token(
       self.pos += 1
     }
     self.at_line_start = false
-    return Some({ token_type: Number, from: start, to: self.pos })
+    return Some({ token_type: Number, from: start, to: self.pos, })
   }
 
   // Argument

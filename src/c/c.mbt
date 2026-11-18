@@ -100,8 +100,8 @@ pub impl Show for CTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct CToken {
   token_type : CTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -165,15 +165,15 @@ fn is_storage_class(word : String) -> Bool {
 pub(all) struct CTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
 /// Create a new C tokenizer
 pub fn CTokenizer::new(input : String) -> CTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
@@ -184,7 +184,7 @@ pub fn CTokenizer::at_end(self : CTokenizer) -> Bool {
 
 ///|
 /// Peek character at offset
-fn CTokenizer::peek_at(self : CTokenizer, offset : Int) -> Char? {
+fn CTokenizer::peek_at(self : CTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -239,7 +239,7 @@ fn CTokenizer::read_line_comment(self : CTokenizer) -> CToken {
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: LineComment, from: start, to: self.pos }
+  { token_type: LineComment, from: start, to: self.pos, }
 }
 
 ///|
@@ -254,7 +254,7 @@ fn CTokenizer::read_block_comment(self : CTokenizer) -> CToken {
     }
     self.pos += 1
   }
-  { token_type: BlockComment, from: start, to: self.pos }
+  { token_type: BlockComment, from: start, to: self.pos, }
 }
 
 ///|
@@ -275,7 +275,7 @@ fn CTokenizer::read_string(self : CTokenizer) -> CToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -296,7 +296,7 @@ fn CTokenizer::read_char(self : CTokenizer) -> CToken {
       self.pos += 1
     }
   }
-  { token_type: Char, from: start, to: self.pos }
+  { token_type: Char, from: start, to: self.pos, }
 }
 
 ///|
@@ -321,7 +321,7 @@ fn CTokenizer::read_number(self : CTokenizer) -> CToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
     // binary
     if next == 'b' || next == 'B' {
@@ -330,7 +330,7 @@ fn CTokenizer::read_number(self : CTokenizer) -> CToken {
             (self.chars[self.pos] == '0' || self.chars[self.pos] == '1') {
         self.pos += 1
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
 
@@ -369,7 +369,7 @@ fn CTokenizer::read_number(self : CTokenizer) -> CToken {
       break
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -381,21 +381,21 @@ fn CTokenizer::read_identifier(self : CTokenizer) -> CToken {
   }
   let word = String::from_array(self.chars[start:self.pos])
   if is_keyword(word) {
-    { token_type: Keyword, from: start, to: self.pos }
+    { token_type: Keyword, from: start, to: self.pos, }
   } else if is_type_keyword(word) {
-    { token_type: TypeKeyword, from: start, to: self.pos }
+    { token_type: TypeKeyword, from: start, to: self.pos, }
   } else if is_storage_class(word) {
-    { token_type: StorageClass, from: start, to: self.pos }
+    { token_type: StorageClass, from: start, to: self.pos, }
   } else {
     // Heuristic: types often start with uppercase or end with _t
     let chars_arr = word.to_array()
     if chars_arr.length() > 0 {
       let first = chars_arr[0]
       if (first >= 'A' && first <= 'Z') || word.has_suffix("_t") {
-        return { token_type: TypeName, from: start, to: self.pos }
+        return { token_type: TypeName, from: start, to: self.pos, }
       }
     }
-    { token_type: Identifier, from: start, to: self.pos }
+    { token_type: Identifier, from: start, to: self.pos, }
   }
 }
 
@@ -418,7 +418,7 @@ fn CTokenizer::read_preprocessor(self : CTokenizer) -> Array[CToken] {
     self.pos += 1
   }
   let directive = String::from_array(self.chars[dir_start:self.pos])
-  tokens.push({ token_type: Preprocessor, from: start, to: self.pos })
+  tokens.push({ token_type: Preprocessor, from: start, to: self.pos, })
 
   // Handle #include specially
   if directive == "include" {
@@ -440,7 +440,7 @@ fn CTokenizer::read_preprocessor(self : CTokenizer) -> Array[CToken] {
         if self.pos < self.len && self.chars[self.pos] == '>' {
           self.pos += 1
         }
-        tokens.push({ token_type: Include, from: inc_start, to: self.pos })
+        tokens.push({ token_type: Include, from: inc_start, to: self.pos, })
       } else if c == '"' {
         self.pos += 1
         while self.pos < self.len &&
@@ -451,7 +451,7 @@ fn CTokenizer::read_preprocessor(self : CTokenizer) -> Array[CToken] {
         if self.pos < self.len && self.chars[self.pos] == '"' {
           self.pos += 1
         }
-        tokens.push({ token_type: Include, from: inc_start, to: self.pos })
+        tokens.push({ token_type: Include, from: inc_start, to: self.pos, })
       }
     }
   }
@@ -545,15 +545,15 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
           let next = self.chars[self.pos]
           if next == '+' {
             self.pos += 1
-            tokens.push({ token_type: Increment, from: start, to: self.pos })
+            tokens.push({ token_type: Increment, from: start, to: self.pos, })
           } else if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Assignment, from: start, to: self.pos })
+            tokens.push({ token_type: Assignment, from: start, to: self.pos, })
           } else {
-            tokens.push({ token_type: Operator, from: start, to: self.pos })
+            tokens.push({ token_type: Operator, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Operator, from: start, to: self.pos })
+          tokens.push({ token_type: Operator, from: start, to: self.pos, })
         }
       }
       '-' => {
@@ -563,18 +563,18 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
           let next = self.chars[self.pos]
           if next == '-' {
             self.pos += 1
-            tokens.push({ token_type: Increment, from: start, to: self.pos })
+            tokens.push({ token_type: Increment, from: start, to: self.pos, })
           } else if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Assignment, from: start, to: self.pos })
+            tokens.push({ token_type: Assignment, from: start, to: self.pos, })
           } else if next == '>' {
             self.pos += 1
-            tokens.push({ token_type: Arrow, from: start, to: self.pos })
+            tokens.push({ token_type: Arrow, from: start, to: self.pos, })
           } else {
-            tokens.push({ token_type: Operator, from: start, to: self.pos })
+            tokens.push({ token_type: Operator, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Operator, from: start, to: self.pos })
+          tokens.push({ token_type: Operator, from: start, to: self.pos, })
         }
       }
       '*' | '/' | '%' => {
@@ -582,9 +582,9 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
         self.pos += 1
         if self.pos < self.len && self.chars[self.pos] == '=' {
           self.pos += 1
-          tokens.push({ token_type: Assignment, from: start, to: self.pos })
+          tokens.push({ token_type: Assignment, from: start, to: self.pos, })
         } else {
-          tokens.push({ token_type: Operator, from: start, to: self.pos })
+          tokens.push({ token_type: Operator, from: start, to: self.pos, })
         }
       }
       '=' => {
@@ -592,9 +592,9 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
         self.pos += 1
         if self.pos < self.len && self.chars[self.pos] == '=' {
           self.pos += 1
-          tokens.push({ token_type: Comparison, from: start, to: self.pos })
+          tokens.push({ token_type: Comparison, from: start, to: self.pos, })
         } else {
-          tokens.push({ token_type: Assignment, from: start, to: self.pos })
+          tokens.push({ token_type: Assignment, from: start, to: self.pos, })
         }
       }
       '!' => {
@@ -602,9 +602,9 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
         self.pos += 1
         if self.pos < self.len && self.chars[self.pos] == '=' {
           self.pos += 1
-          tokens.push({ token_type: Comparison, from: start, to: self.pos })
+          tokens.push({ token_type: Comparison, from: start, to: self.pos, })
         } else {
-          tokens.push({ token_type: Logical, from: start, to: self.pos })
+          tokens.push({ token_type: Logical, from: start, to: self.pos, })
         }
       }
       '<' => {
@@ -614,20 +614,20 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
           let next = self.chars[self.pos]
           if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Comparison, from: start, to: self.pos })
+            tokens.push({ token_type: Comparison, from: start, to: self.pos, })
           } else if next == '<' {
             self.pos += 1
             if self.pos < self.len && self.chars[self.pos] == '=' {
               self.pos += 1
-              tokens.push({ token_type: Assignment, from: start, to: self.pos })
+              tokens.push({ token_type: Assignment, from: start, to: self.pos, })
             } else {
-              tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+              tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
             }
           } else {
-            tokens.push({ token_type: Comparison, from: start, to: self.pos })
+            tokens.push({ token_type: Comparison, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Comparison, from: start, to: self.pos })
+          tokens.push({ token_type: Comparison, from: start, to: self.pos, })
         }
       }
       '>' => {
@@ -637,20 +637,20 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
           let next = self.chars[self.pos]
           if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Comparison, from: start, to: self.pos })
+            tokens.push({ token_type: Comparison, from: start, to: self.pos, })
           } else if next == '>' {
             self.pos += 1
             if self.pos < self.len && self.chars[self.pos] == '=' {
               self.pos += 1
-              tokens.push({ token_type: Assignment, from: start, to: self.pos })
+              tokens.push({ token_type: Assignment, from: start, to: self.pos, })
             } else {
-              tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+              tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
             }
           } else {
-            tokens.push({ token_type: Comparison, from: start, to: self.pos })
+            tokens.push({ token_type: Comparison, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Comparison, from: start, to: self.pos })
+          tokens.push({ token_type: Comparison, from: start, to: self.pos, })
         }
       }
       '&' => {
@@ -660,15 +660,15 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
           let next = self.chars[self.pos]
           if next == '&' {
             self.pos += 1
-            tokens.push({ token_type: Logical, from: start, to: self.pos })
+            tokens.push({ token_type: Logical, from: start, to: self.pos, })
           } else if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Assignment, from: start, to: self.pos })
+            tokens.push({ token_type: Assignment, from: start, to: self.pos, })
           } else {
-            tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+            tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+          tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
         }
       }
       '|' => {
@@ -678,15 +678,15 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
           let next = self.chars[self.pos]
           if next == '|' {
             self.pos += 1
-            tokens.push({ token_type: Logical, from: start, to: self.pos })
+            tokens.push({ token_type: Logical, from: start, to: self.pos, })
           } else if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Assignment, from: start, to: self.pos })
+            tokens.push({ token_type: Assignment, from: start, to: self.pos, })
           } else {
-            tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+            tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+          tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
         }
       }
       '^' => {
@@ -694,25 +694,25 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
         self.pos += 1
         if self.pos < self.len && self.chars[self.pos] == '=' {
           self.pos += 1
-          tokens.push({ token_type: Assignment, from: start, to: self.pos })
+          tokens.push({ token_type: Assignment, from: start, to: self.pos, })
         } else {
-          tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+          tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
         }
       }
       '~' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+        tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
       }
       '?' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Ternary, from: start, to: self.pos })
+        tokens.push({ token_type: Ternary, from: start, to: self.pos, })
       }
       ':' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Ternary, from: start, to: self.pos })
+        tokens.push({ token_type: Ternary, from: start, to: self.pos, })
       }
       '.' => {
         let start = self.pos
@@ -721,55 +721,55 @@ pub fn CTokenizer::tokenize_all(self : CTokenizer) -> Array[CToken] {
           self.chars[self.pos] == '.' &&
           self.chars[self.pos + 1] == '.' {
           self.pos += 2
-          tokens.push({ token_type: Operator, from: start, to: self.pos }) // ...
+          tokens.push({ token_type: Operator, from: start, to: self.pos, }) // ...
         } else {
-          tokens.push({ token_type: Dot, from: start, to: self.pos })
+          tokens.push({ token_type: Dot, from: start, to: self.pos, })
         }
       }
       ';' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Semicolon, from: start, to: self.pos })
+        tokens.push({ token_type: Semicolon, from: start, to: self.pos, })
       }
       ',' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Comma, from: start, to: self.pos })
+        tokens.push({ token_type: Comma, from: start, to: self.pos, })
       }
       '(' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: ParenOpen, from: start, to: self.pos })
+        tokens.push({ token_type: ParenOpen, from: start, to: self.pos, })
       }
       ')' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: ParenClose, from: start, to: self.pos })
+        tokens.push({ token_type: ParenClose, from: start, to: self.pos, })
       }
       '{' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceOpen, from: start, to: self.pos })
+        tokens.push({ token_type: BraceOpen, from: start, to: self.pos, })
       }
       '}' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceClose, from: start, to: self.pos })
+        tokens.push({ token_type: BraceClose, from: start, to: self.pos, })
       }
       '[' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BracketOpen, from: start, to: self.pos })
+        tokens.push({ token_type: BracketOpen, from: start, to: self.pos, })
       }
       ']' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BracketClose, from: start, to: self.pos })
+        tokens.push({ token_type: BracketClose, from: start, to: self.pos, })
       }
       _ => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Error, from: start, to: self.pos })
+        tokens.push({ token_type: Error, from: start, to: self.pos, })
       }
     }
   }

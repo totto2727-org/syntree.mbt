@@ -80,8 +80,8 @@ pub impl Show for OcamlTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct OcamlToken {
   token_type : OcamlTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -99,8 +99,8 @@ pub impl Show for OcamlToken with fn output(self, logger) {
 pub(all) struct OcamlTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -120,11 +120,11 @@ let ocaml_module_keywords : Array[String] = [
 ///|
 pub fn OcamlTokenizer::new(input : String) -> OcamlTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn OcamlTokenizer::peek_at(self : OcamlTokenizer, offset : Int) -> Char? {
+fn OcamlTokenizer::peek_at(self : OcamlTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -187,7 +187,7 @@ fn OcamlTokenizer::read_comment(self : OcamlTokenizer) -> OcamlToken {
       self.pos += 1
     }
   }
-  { token_type: Comment, from: start, to: self.pos }
+  { token_type: Comment, from: start, to: self.pos, }
 }
 
 ///|
@@ -205,7 +205,7 @@ fn OcamlTokenizer::read_string(self : OcamlTokenizer) -> OcamlToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -220,7 +220,7 @@ fn OcamlTokenizer::read_char(self : OcamlTokenizer) -> OcamlToken {
   if self.pos < self.len && self.chars[self.pos] == '\'' {
     self.pos += 1
   }
-  { token_type: Char, from: start, to: self.pos }
+  { token_type: Char, from: start, to: self.pos, }
 }
 
 ///|
@@ -246,7 +246,7 @@ fn OcamlTokenizer::read_number(self : OcamlTokenizer) -> OcamlToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -272,7 +272,7 @@ fn OcamlTokenizer::read_number(self : OcamlTokenizer) -> OcamlToken {
       self.pos += 1
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -296,7 +296,7 @@ fn OcamlTokenizer::read_identifier(self : OcamlTokenizer) -> OcamlToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -315,7 +315,7 @@ fn OcamlTokenizer::read_operator(self : OcamlTokenizer) -> OcamlToken {
     "|" => Pipe
     _ => Operator
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -336,13 +336,13 @@ pub fn OcamlTokenizer::next_token(self : OcamlTokenizer) -> OcamlToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comment
@@ -362,7 +362,7 @@ pub fn OcamlTokenizer::next_token(self : OcamlTokenizer) -> OcamlToken? {
       while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
         self.pos += 1
       }
-      return Some({ token_type: TypeIdent, from: start, to: self.pos })
+      return Some({ token_type: TypeIdent, from: start, to: self.pos, })
     } else {
       return Some(self.read_char())
     }
@@ -380,7 +380,7 @@ pub fn OcamlTokenizer::next_token(self : OcamlTokenizer) -> OcamlToken? {
       while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
         self.pos += 1
       }
-      return Some({ token_type: Label, from: start, to: self.pos })
+      return Some({ token_type: Label, from: start, to: self.pos, })
     }
   }
 
@@ -392,7 +392,7 @@ pub fn OcamlTokenizer::next_token(self : OcamlTokenizer) -> OcamlToken? {
   // Double semicolon
   if c == ';' && self.peek_at(1) == Some(';') {
     self.pos += 2
-    return Some({ token_type: Semicolon2, from: start, to: self.pos })
+    return Some({ token_type: Semicolon2, from: start, to: self.pos, })
   }
 
   // Operator
@@ -414,7 +414,7 @@ pub fn OcamlTokenizer::next_token(self : OcamlTokenizer) -> OcamlToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

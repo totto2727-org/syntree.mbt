@@ -224,8 +224,8 @@ pub fn vitesse_dark() -> HighlightTheme {
 ///|
 /// A positioned token with color information
 priv struct ColoredToken {
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
   color : String
 }
 
@@ -253,7 +253,7 @@ pub fn tokens_to_html(
   let colored_tokens : Array[ColoredToken] = []
   for token in tokens {
     let color = theme.get_color(token.tag)
-    colored_tokens.push({ from: token.from, to: token.to, color })
+    colored_tokens.push({ from: token.from, to: token.to, color, })
   }
 
   // Process line by line
@@ -297,8 +297,8 @@ pub fn tokens_to_html(
 fn write_line_content(
   buf : StringBuilder,
   chars : Array[Char],
-  line_start : Int,
-  line_end : Int,
+  line_start : Int32,
+  line_end : Int32,
   tokens : Array[ColoredToken],
   default_color : String,
 ) -> Unit {

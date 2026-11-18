@@ -370,3 +370,6 @@ test "edge: vendor prefix" {
   }
   assert_true(found)
 }
+
+///|
+using @css {type CssTokenizer, highlight_css, highlight_css_to_html}

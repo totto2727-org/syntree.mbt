@@ -191,8 +191,8 @@ fn is_builtin_type(word : String) -> Bool {
 #derive(Eq, Debug)
 pub(all) struct MbtToken {
   token_type : MbtTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -237,8 +237,8 @@ pub impl Show for MbtContext with fn output(self, logger) {
 pub(all) struct MbtTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   priv context_stack : Array[MbtContext]
 }
 
@@ -246,7 +246,7 @@ pub(all) struct MbtTokenizer {
 /// Create a new tokenizer
 pub fn MbtTokenizer::new(input : String) -> MbtTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0, context_stack: [Normal] }
+  { input, chars, len: chars.length(), pos: 0, context_stack: [Normal], }
 }
 
 ///|
@@ -328,14 +328,14 @@ fn MbtTokenizer::read_string(self : MbtTokenizer) -> MbtToken {
     let c = self.chars[self.pos]
     if c == '"' {
       self.pos += 1
-      return { token_type: String, from: start, to: self.pos }
+      return { token_type: String, from: start, to: self.pos, }
     } else if c == '\\' && self.pos + 1 < self.len {
       let next = self.chars[self.pos + 1]
       if next == '{' {
         // String interpolation starts: "...\{
         self.pos += 2 // Skip \{
         self.push_context(StringInterp)
-        return { token_type: StringHead, from: start, to: self.pos }
+        return { token_type: StringHead, from: start, to: self.pos, }
       } else {
         self.pos += 2 // Skip escape sequence
       }
@@ -343,7 +343,7 @@ fn MbtTokenizer::read_string(self : MbtTokenizer) -> MbtToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -356,14 +356,14 @@ fn MbtTokenizer::read_string_continuation(self : MbtTokenizer) -> MbtToken {
     let c = self.chars[self.pos]
     if c == '"' {
       self.pos += 1
-      return { token_type: StringTail, from: start, to: self.pos }
+      return { token_type: StringTail, from: start, to: self.pos, }
     } else if c == '\\' && self.pos + 1 < self.len {
       let next = self.chars[self.pos + 1]
       if next == '{' {
         // Another interpolation: }...\{
         self.pos += 2
         self.push_context(StringInterp)
-        return { token_type: StringMiddle, from: start, to: self.pos }
+        return { token_type: StringMiddle, from: start, to: self.pos, }
       } else {
         self.pos += 2
       }
@@ -371,7 +371,7 @@ fn MbtTokenizer::read_string_continuation(self : MbtTokenizer) -> MbtToken {
       self.pos += 1
     }
   }
-  { token_type: StringTail, from: start, to: self.pos }
+  { token_type: StringTail, from: start, to: self.pos, }
 }
 
 ///|
@@ -390,7 +390,7 @@ fn MbtTokenizer::read_char(self : MbtTokenizer) -> MbtToken {
       self.pos += 1
     }
   }
-  { token_type: Char, from: start, to: self.pos }
+  { token_type: Char, from: start, to: self.pos, }
 }
 
 ///|
@@ -410,7 +410,7 @@ fn MbtTokenizer::read_byte_string(self : MbtTokenizer) -> MbtToken {
       self.pos += 1
     }
   }
-  { token_type: ByteString, from: start, to: self.pos }
+  { token_type: ByteString, from: start, to: self.pos, }
 }
 
 ///|
@@ -430,7 +430,7 @@ fn MbtTokenizer::read_byte(self : MbtTokenizer) -> MbtToken {
       self.pos += 1
     }
   }
-  { token_type: Byte, from: start, to: self.pos }
+  { token_type: Byte, from: start, to: self.pos, }
 }
 
 ///|
@@ -453,7 +453,7 @@ fn MbtTokenizer::read_number(self : MbtTokenizer) -> MbtToken {
             break
           }
         }
-        return { token_type: Number, from: start, to: self.pos }
+        return { token_type: Number, from: start, to: self.pos, }
       } else if next == 'b' || next == 'B' {
         // Binary
         self.pos += 2
@@ -465,7 +465,7 @@ fn MbtTokenizer::read_number(self : MbtTokenizer) -> MbtToken {
             break
           }
         }
-        return { token_type: Number, from: start, to: self.pos }
+        return { token_type: Number, from: start, to: self.pos, }
       } else if next == 'o' || next == 'O' {
         // Octal
         self.pos += 2
@@ -477,7 +477,7 @@ fn MbtTokenizer::read_number(self : MbtTokenizer) -> MbtToken {
             break
           }
         }
-        return { token_type: Number, from: start, to: self.pos }
+        return { token_type: Number, from: start, to: self.pos, }
       }
     }
   }
@@ -543,7 +543,7 @@ fn MbtTokenizer::read_number(self : MbtTokenizer) -> MbtToken {
       }
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -564,7 +564,7 @@ fn MbtTokenizer::read_identifier(self : MbtTokenizer) -> MbtToken {
     _ if is_uppercase(first_char) => TypeName // PascalCase = type name
     _ => Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -580,7 +580,7 @@ fn MbtTokenizer::read_line_comment(self : MbtTokenizer) -> MbtToken {
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return { token_type: DocComment, from: start, to: self.pos }
+    return { token_type: DocComment, from: start, to: self.pos, }
   }
 
   // Regular line comment
@@ -588,7 +588,7 @@ fn MbtTokenizer::read_line_comment(self : MbtTokenizer) -> MbtToken {
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: LineComment, from: start, to: self.pos }
+  { token_type: LineComment, from: start, to: self.pos, }
 }
 
 ///|
@@ -599,7 +599,7 @@ fn MbtTokenizer::read_raw_string(self : MbtTokenizer) -> MbtToken {
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: RawString, from: start, to: self.pos }
+  { token_type: RawString, from: start, to: self.pos, }
 }
 
 ///|
@@ -613,11 +613,11 @@ fn MbtTokenizer::read_interp_string(self : MbtTokenizer) -> MbtToken {
       // Found \{ - interpolation starts
       self.pos += 2 // Skip \{
       self.push_context(InterpStringInterp)
-      return { token_type: InterpStringHead, from: start, to: self.pos }
+      return { token_type: InterpStringHead, from: start, to: self.pos, }
     }
     self.pos += 1
   }
-  { token_type: InterpString, from: start, to: self.pos }
+  { token_type: InterpString, from: start, to: self.pos, }
 }
 
 ///|
@@ -634,11 +634,11 @@ fn MbtTokenizer::read_interp_string_continuation(
       // Another interpolation
       self.pos += 2
       self.push_context(InterpStringInterp)
-      return { token_type: InterpStringMiddle, from: start, to: self.pos }
+      return { token_type: InterpStringMiddle, from: start, to: self.pos, }
     }
     self.pos += 1
   }
-  { token_type: InterpStringTail, from: start, to: self.pos }
+  { token_type: InterpStringTail, from: start, to: self.pos, }
 }
 
 ///|
@@ -653,19 +653,19 @@ fn MbtTokenizer::read_operator(self : MbtTokenizer) -> MbtToken {
     match (c, next) {
       ('-', '>') | ('=', '>') => {
         self.pos += 2
-        return { token_type: Arrow, from: start, to: self.pos }
+        return { token_type: Arrow, from: start, to: self.pos, }
       }
       ('.', '.') => {
         self.pos += 2
-        return { token_type: Range, from: start, to: self.pos }
+        return { token_type: Range, from: start, to: self.pos, }
       }
       ('|', '>') => {
         self.pos += 2
-        return { token_type: Pipe, from: start, to: self.pos }
+        return { token_type: Pipe, from: start, to: self.pos, }
       }
       (':', ':') => {
         self.pos += 2
-        return { token_type: DoubleColon, from: start, to: self.pos }
+        return { token_type: DoubleColon, from: start, to: self.pos, }
       }
       ('=', '=')
       | ('!', '=')
@@ -680,7 +680,7 @@ fn MbtTokenizer::read_operator(self : MbtTokenizer) -> MbtToken {
       | ('*', '=')
       | ('/', '=') => {
         self.pos += 2
-        return { token_type: Operator, from: start, to: self.pos }
+        return { token_type: Operator, from: start, to: self.pos, }
       }
       _ => ()
     }
@@ -688,7 +688,7 @@ fn MbtTokenizer::read_operator(self : MbtTokenizer) -> MbtToken {
 
   // Single-character operators
   self.pos += 1
-  { token_type: Operator, from: start, to: self.pos }
+  { token_type: Operator, from: start, to: self.pos, }
 }
 
 ///|
@@ -701,7 +701,7 @@ fn MbtTokenizer::read_label(self : MbtTokenizer) -> MbtToken {
   while self.pos < self.len && is_ident_part(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: Label, from: start, to: self.pos }
+  { token_type: Label, from: start, to: self.pos, }
 }
 
 ///|
@@ -749,7 +749,7 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
         self.read_raw_string()
       } else {
         self.pos += 1
-        { token_type: Operator, from: start, to: self.pos }
+        { token_type: Operator, from: start, to: self.pos, }
       }
 
     // Interpolated multiline string ($|...)
@@ -758,13 +758,13 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
         self.read_interp_string()
       } else {
         self.pos += 1
-        { token_type: Operator, from: start, to: self.pos }
+        { token_type: Operator, from: start, to: self.pos, }
       }
 
     // Braces
     '{' => {
       self.pos += 1
-      { token_type: BraceOpen, from: start, to: self.pos }
+      { token_type: BraceOpen, from: start, to: self.pos, }
     }
     '}' => {
       // Check if we're inside string interpolation
@@ -775,50 +775,50 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
         self.read_interp_string_continuation()
       } else {
         self.pos += 1
-        { token_type: BraceClose, from: start, to: self.pos }
+        { token_type: BraceClose, from: start, to: self.pos, }
       }
     }
     '[' => {
       self.pos += 1
-      { token_type: BracketOpen, from: start, to: self.pos }
+      { token_type: BracketOpen, from: start, to: self.pos, }
     }
     ']' => {
       self.pos += 1
-      { token_type: BracketClose, from: start, to: self.pos }
+      { token_type: BracketClose, from: start, to: self.pos, }
     }
     '(' => {
       self.pos += 1
-      { token_type: ParenOpen, from: start, to: self.pos }
+      { token_type: ParenOpen, from: start, to: self.pos, }
     }
     ')' => {
       self.pos += 1
-      { token_type: ParenClose, from: start, to: self.pos }
+      { token_type: ParenClose, from: start, to: self.pos, }
     }
 
     // Punctuation
     ';' => {
       self.pos += 1
-      { token_type: Semicolon, from: start, to: self.pos }
+      { token_type: Semicolon, from: start, to: self.pos, }
     }
     ',' => {
       self.pos += 1
-      { token_type: Comma, from: start, to: self.pos }
+      { token_type: Comma, from: start, to: self.pos, }
     }
     ':' =>
       if self.pos + 1 < self.len && self.chars[self.pos + 1] == ':' {
         self.pos += 2
-        { token_type: DoubleColon, from: start, to: self.pos }
+        { token_type: DoubleColon, from: start, to: self.pos, }
       } else {
         self.pos += 1
-        { token_type: Colon, from: start, to: self.pos }
+        { token_type: Colon, from: start, to: self.pos, }
       }
     '@' => {
       self.pos += 1
-      { token_type: At, from: start, to: self.pos }
+      { token_type: At, from: start, to: self.pos, }
     }
     '?' => {
       self.pos += 1
-      { token_type: Question, from: start, to: self.pos }
+      { token_type: Question, from: start, to: self.pos, }
     }
     '~' =>
       // Label or tilde operator
@@ -826,19 +826,19 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
         self.read_label()
       } else {
         self.pos += 1
-        { token_type: Tilde, from: start, to: self.pos }
+        { token_type: Tilde, from: start, to: self.pos, }
       }
 
     // Dot or range
     '.' =>
       if self.pos + 1 < self.len && self.chars[self.pos + 1] == '.' {
         self.pos += 2
-        { token_type: Range, from: start, to: self.pos }
+        { token_type: Range, from: start, to: self.pos, }
       } else if self.pos + 1 < self.len && is_digit(self.chars[self.pos + 1]) {
         self.read_number()
       } else {
         self.pos += 1
-        { token_type: Dot, from: start, to: self.pos }
+        { token_type: Dot, from: start, to: self.pos, }
       }
 
     // Numbers
@@ -855,7 +855,7 @@ pub fn MbtTokenizer::next_token(self : MbtTokenizer) -> MbtToken? {
     // Error
     _ => {
       self.pos += 1
-      { token_type: Error, from: start, to: self.pos }
+      { token_type: Error, from: start, to: self.pos, }
     }
   }
   Some(token)

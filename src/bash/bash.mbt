@@ -110,8 +110,8 @@ pub impl Show for BashTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct BashToken {
   token_type : BashTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -154,8 +154,8 @@ fn is_keyword(word : String) -> Bool {
 pub(all) struct BashTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   priv mut at_line_start : Bool
   priv mut after_command : Bool
 }
@@ -182,7 +182,7 @@ pub fn BashTokenizer::at_end(self : BashTokenizer) -> Bool {
 
 ///|
 /// Peek character at offset
-fn BashTokenizer::peek_at(self : BashTokenizer, offset : Int) -> Char? {
+fn BashTokenizer::peek_at(self : BashTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -236,14 +236,14 @@ fn BashTokenizer::read_comment(self : BashTokenizer) -> BashToken {
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return { token_type: Shebang, from: start, to: self.pos }
+    return { token_type: Shebang, from: start, to: self.pos, }
   }
 
   // Regular comment
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: Comment, from: start, to: self.pos }
+  { token_type: Comment, from: start, to: self.pos, }
 }
 
 ///|
@@ -262,7 +262,7 @@ fn BashTokenizer::read_double_string(self : BashTokenizer) -> BashToken {
       self.pos += 1
     }
   }
-  { token_type: DoubleString, from: start, to: self.pos }
+  { token_type: DoubleString, from: start, to: self.pos, }
 }
 
 ///|
@@ -276,7 +276,7 @@ fn BashTokenizer::read_single_string(self : BashTokenizer) -> BashToken {
   if self.pos < self.len {
     self.pos += 1 // skip closing '
   }
-  { token_type: SingleString, from: start, to: self.pos }
+  { token_type: SingleString, from: start, to: self.pos, }
 }
 
 ///|
@@ -295,7 +295,7 @@ fn BashTokenizer::read_raw_string(self : BashTokenizer) -> BashToken {
       self.pos += 1
     }
   }
-  { token_type: RawString, from: start, to: self.pos }
+  { token_type: RawString, from: start, to: self.pos, }
 }
 
 ///|
@@ -304,7 +304,7 @@ fn BashTokenizer::read_variable(self : BashTokenizer) -> BashToken {
   let start = self.pos
   self.pos += 1 // skip $
   if self.pos >= self.len {
-    return { token_type: Variable, from: start, to: self.pos }
+    return { token_type: Variable, from: start, to: self.pos, }
   }
   let c = self.chars[self.pos]
 
@@ -312,11 +312,11 @@ fn BashTokenizer::read_variable(self : BashTokenizer) -> BashToken {
   match c {
     '?' | '!' | '$' | '@' | '*' | '#' | '-' | '_' => {
       self.pos += 1
-      return { token_type: SpecialVar, from: start, to: self.pos }
+      return { token_type: SpecialVar, from: start, to: self.pos, }
     }
     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
       self.pos += 1
-      return { token_type: SpecialVar, from: start, to: self.pos }
+      return { token_type: SpecialVar, from: start, to: self.pos, }
     }
     _ => ()
   }
@@ -330,7 +330,7 @@ fn BashTokenizer::read_variable(self : BashTokenizer) -> BashToken {
     if self.pos < self.len {
       self.pos += 1 // skip }
     }
-    return { token_type: Variable, from: start, to: self.pos }
+    return { token_type: Variable, from: start, to: self.pos, }
   }
 
   // $(...) command substitution
@@ -347,7 +347,7 @@ fn BashTokenizer::read_variable(self : BashTokenizer) -> BashToken {
         }
         self.pos += 1
       }
-      return { token_type: ArithmeticExp, from: start, to: self.pos }
+      return { token_type: ArithmeticExp, from: start, to: self.pos, }
     }
 
     // Regular command substitution
@@ -362,7 +362,7 @@ fn BashTokenizer::read_variable(self : BashTokenizer) -> BashToken {
       }
       self.pos += 1
     }
-    return { token_type: CommandSub, from: start, to: self.pos }
+    return { token_type: CommandSub, from: start, to: self.pos, }
   }
 
   // Regular variable name
@@ -377,7 +377,7 @@ fn BashTokenizer::read_variable(self : BashTokenizer) -> BashToken {
       break
     }
   }
-  { token_type: Variable, from: start, to: self.pos }
+  { token_type: Variable, from: start, to: self.pos, }
 }
 
 ///|
@@ -394,7 +394,7 @@ fn BashTokenizer::read_word(self : BashTokenizer) -> BashToken {
     while self.pos < self.len && is_word_char(self.chars[self.pos]) {
       self.pos += 1
     }
-    return { token_type: Option, from: start, to: self.pos }
+    return { token_type: Option, from: start, to: self.pos, }
   }
   while self.pos < self.len && is_word_char(self.chars[self.pos]) {
     self.pos += 1
@@ -403,15 +403,15 @@ fn BashTokenizer::read_word(self : BashTokenizer) -> BashToken {
   // Check if it's a keyword
   let word = String::from_array(self.chars[start:self.pos])
   if is_keyword(word) {
-    return { token_type: Keyword, from: start, to: self.pos }
+    return { token_type: Keyword, from: start, to: self.pos, }
   }
 
   // First word after newline/semicolon is a command
   if self.at_line_start && !self.after_command {
     self.after_command = true
-    return { token_type: Command, from: start, to: self.pos }
+    return { token_type: Command, from: start, to: self.pos, }
   }
-  { token_type: Argument, from: start, to: self.pos }
+  { token_type: Argument, from: start, to: self.pos, }
 }
 
 ///|
@@ -472,7 +472,7 @@ pub fn BashTokenizer::tokenize_all(self : BashTokenizer) -> Array[BashToken] {
         }
         self.pos += 1
       }
-      tokens.push({ token_type: ProcessSub, from: start, to: self.pos })
+      tokens.push({ token_type: ProcessSub, from: start, to: self.pos, })
       continue
     }
 
@@ -482,15 +482,15 @@ pub fn BashTokenizer::tokenize_all(self : BashTokenizer) -> Array[BashToken] {
         if self.peek_at(1) == Some('|') {
           let start = self.pos
           self.pos += 2
-          tokens.push({ token_type: Or, from: start, to: self.pos })
+          tokens.push({ token_type: Or, from: start, to: self.pos, })
         } else if self.peek_at(1) == Some('&') {
           let start = self.pos
           self.pos += 2
-          tokens.push({ token_type: PipeAnd, from: start, to: self.pos })
+          tokens.push({ token_type: PipeAnd, from: start, to: self.pos, })
         } else {
           let start = self.pos
           self.pos += 1
-          tokens.push({ token_type: Pipe, from: start, to: self.pos })
+          tokens.push({ token_type: Pipe, from: start, to: self.pos, })
           self.at_line_start = true
           self.after_command = false
         }
@@ -498,27 +498,31 @@ pub fn BashTokenizer::tokenize_all(self : BashTokenizer) -> Array[BashToken] {
         if self.peek_at(1) == Some('&') {
           let start = self.pos
           self.pos += 2
-          tokens.push({ token_type: And, from: start, to: self.pos })
+          tokens.push({ token_type: And, from: start, to: self.pos, })
           self.at_line_start = true
           self.after_command = false
         } else if self.peek_at(1) == Some('>') {
           let start = self.pos
           self.pos += 2
-          tokens.push({ token_type: Redirect, from: start, to: self.pos })
+          tokens.push({ token_type: Redirect, from: start, to: self.pos, })
         } else {
           let start = self.pos
           self.pos += 1
-          tokens.push({ token_type: Background, from: start, to: self.pos })
+          tokens.push({ token_type: Background, from: start, to: self.pos, })
         }
       ';' =>
         if self.peek_at(1) == Some(';') {
           let start = self.pos
           self.pos += 2
-          tokens.push({ token_type: DoubleSemicolon, from: start, to: self.pos })
+          tokens.push({
+            token_type: DoubleSemicolon,
+            from: start,
+            to: self.pos,
+          })
         } else {
           let start = self.pos
           self.pos += 1
-          tokens.push({ token_type: Semicolon, from: start, to: self.pos })
+          tokens.push({ token_type: Semicolon, from: start, to: self.pos, })
           self.at_line_start = true
           self.after_command = false
         }
@@ -528,7 +532,7 @@ pub fn BashTokenizer::tokenize_all(self : BashTokenizer) -> Array[BashToken] {
         if self.pos < self.len && self.chars[self.pos] == '>' {
           self.pos += 1
         }
-        tokens.push({ token_type: Redirect, from: start, to: self.pos })
+        tokens.push({ token_type: Redirect, from: start, to: self.pos, })
       }
       '<' => {
         let start = self.pos
@@ -540,57 +544,57 @@ pub fn BashTokenizer::tokenize_all(self : BashTokenizer) -> Array[BashToken] {
             self.pos += 1
           }
         }
-        tokens.push({ token_type: Redirect, from: start, to: self.pos })
+        tokens.push({ token_type: Redirect, from: start, to: self.pos, })
       }
       '(' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: ParenOpen, from: start, to: self.pos })
+        tokens.push({ token_type: ParenOpen, from: start, to: self.pos, })
       }
       ')' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: ParenClose, from: start, to: self.pos })
+        tokens.push({ token_type: ParenClose, from: start, to: self.pos, })
       }
       '{' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceOpen, from: start, to: self.pos })
+        tokens.push({ token_type: BraceOpen, from: start, to: self.pos, })
       }
       '}' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceClose, from: start, to: self.pos })
+        tokens.push({ token_type: BraceClose, from: start, to: self.pos, })
       }
       '[' =>
         if self.peek_at(1) == Some('[') {
           let start = self.pos
           self.pos += 2
-          tokens.push({ token_type: DoubleBracket, from: start, to: self.pos })
+          tokens.push({ token_type: DoubleBracket, from: start, to: self.pos, })
         } else {
           let start = self.pos
           self.pos += 1
-          tokens.push({ token_type: BracketOpen, from: start, to: self.pos })
+          tokens.push({ token_type: BracketOpen, from: start, to: self.pos, })
         }
       ']' =>
         if self.peek_at(1) == Some(']') {
           let start = self.pos
           self.pos += 2
-          tokens.push({ token_type: DoubleBracket, from: start, to: self.pos })
+          tokens.push({ token_type: DoubleBracket, from: start, to: self.pos, })
         } else {
           let start = self.pos
           self.pos += 1
-          tokens.push({ token_type: BracketClose, from: start, to: self.pos })
+          tokens.push({ token_type: BracketClose, from: start, to: self.pos, })
         }
       '=' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Equals, from: start, to: self.pos })
+        tokens.push({ token_type: Equals, from: start, to: self.pos, })
       }
       '*' | '?' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Glob, from: start, to: self.pos })
+        tokens.push({ token_type: Glob, from: start, to: self.pos, })
       }
       _ =>
         // Number
@@ -610,9 +614,9 @@ pub fn BashTokenizer::tokenize_all(self : BashTokenizer) -> Array[BashToken] {
             } else {
               self.pos += 1
             }
-            tokens.push({ token_type: Redirect, from: start, to: self.pos })
+            tokens.push({ token_type: Redirect, from: start, to: self.pos, })
           } else {
-            tokens.push({ token_type: Number, from: start, to: self.pos })
+            tokens.push({ token_type: Number, from: start, to: self.pos, })
           }
         } else if is_word_char(c) || c == '-' {
           // Word (command, argument, keyword)
@@ -622,7 +626,7 @@ pub fn BashTokenizer::tokenize_all(self : BashTokenizer) -> Array[BashToken] {
           // Unknown
           let start = self.pos
           self.pos += 1
-          tokens.push({ token_type: Error, from: start, to: self.pos })
+          tokens.push({ token_type: Error, from: start, to: self.pos, })
         }
     }
   }

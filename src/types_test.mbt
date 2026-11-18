@@ -546,3 +546,14 @@ test "LineCache handles consecutive empty lines" {
   assert_eq(cache.get_line_tokens(2).length(), 0) // empty
   assert_eq(cache.get_line_tokens(3).length(), 1) // "b"
 }
+
+///|
+using @syntree {
+  type HighlightTag,
+  type HighlightToken,
+  type LineCache,
+  type NodeType,
+  type Tree,
+  type TreeBuffer,
+  type TreeCursor,
+}

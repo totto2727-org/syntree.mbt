@@ -889,3 +889,12 @@ test "highlight_typescript handles type names" {
   let tags = tokens.map(fn(t) { t.tag })
   assert_true(tags.contains(@syntree.HighlightTag::TypeName))
 }
+
+///|
+using @typescript {
+  type TokenCache,
+  type TsTokenizer,
+  highlight_javascript,
+  highlight_typescript,
+  highlight_typescript_to_html,
+}

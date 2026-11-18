@@ -46,8 +46,8 @@ pub impl Show for XmlTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct XmlToken {
   token_type : XmlTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -65,19 +65,19 @@ pub impl Show for XmlToken with fn output(self, logger) {
 pub(all) struct XmlTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   priv mut in_tag : Bool
 }
 
 ///|
 pub fn XmlTokenizer::new(input : String) -> XmlTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0, in_tag: false }
+  { input, chars, len: chars.length(), pos: 0, in_tag: false, }
 }
 
 ///|
-fn XmlTokenizer::peek_at(self : XmlTokenizer, offset : Int) -> Char? {
+fn XmlTokenizer::peek_at(self : XmlTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -103,7 +103,7 @@ fn XmlTokenizer::read_name(self : XmlTokenizer) -> XmlToken {
     self.pos += 1
   }
   let token_type = if self.in_tag { AttrName } else { TagName }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -117,7 +117,7 @@ fn XmlTokenizer::read_attr_value(self : XmlTokenizer) -> XmlToken {
   if self.pos < self.len {
     self.pos += 1
   }
-  { token_type: AttrValue, from: start, to: self.pos }
+  { token_type: AttrValue, from: start, to: self.pos, }
 }
 
 ///|
@@ -133,7 +133,7 @@ fn XmlTokenizer::read_comment(self : XmlTokenizer) -> XmlToken {
     }
     self.pos += 1
   }
-  { token_type: Comment, from: start, to: self.pos }
+  { token_type: Comment, from: start, to: self.pos, }
 }
 
 ///|
@@ -149,7 +149,7 @@ fn XmlTokenizer::read_cdata(self : XmlTokenizer) -> XmlToken {
     }
     self.pos += 1
   }
-  { token_type: CData, from: start, to: self.pos }
+  { token_type: CData, from: start, to: self.pos, }
 }
 
 ///|
@@ -163,7 +163,7 @@ fn XmlTokenizer::read_processing_instruction(self : XmlTokenizer) -> XmlToken {
     }
     self.pos += 1
   }
-  { token_type: ProcessingInstruction, from: start, to: self.pos }
+  { token_type: ProcessingInstruction, from: start, to: self.pos, }
 }
 
 ///|
@@ -180,7 +180,7 @@ fn XmlTokenizer::read_doctype(self : XmlTokenizer) -> XmlToken {
     }
     self.pos += 1
   }
-  { token_type: DocType, from: start, to: self.pos }
+  { token_type: DocType, from: start, to: self.pos, }
 }
 
 ///|
@@ -189,7 +189,7 @@ fn XmlTokenizer::read_text(self : XmlTokenizer) -> XmlToken {
   while self.pos < self.len && self.chars[self.pos] != '<' {
     self.pos += 1
   }
-  { token_type: Text, from: start, to: self.pos }
+  { token_type: Text, from: start, to: self.pos, }
 }
 
 ///|
@@ -223,33 +223,33 @@ pub fn XmlTokenizer::next_token(self : XmlTokenizer) -> XmlToken? {
           break
         }
       }
-      return Some({ token_type: Whitespace, from: start, to: self.pos })
+      return Some({ token_type: Whitespace, from: start, to: self.pos, })
     }
 
     // Newline
     if c == '\n' {
       self.pos += 1
-      return Some({ token_type: Newline, from: start, to: self.pos })
+      return Some({ token_type: Newline, from: start, to: self.pos, })
     }
 
     // Self-closing tag end
     if c == '/' && self.peek_at(1) == Some('>') {
       self.pos += 2
       self.in_tag = false
-      return Some({ token_type: TagSelfClose, from: start, to: self.pos })
+      return Some({ token_type: TagSelfClose, from: start, to: self.pos, })
     }
 
     // Tag end
     if c == '>' {
       self.pos += 1
       self.in_tag = false
-      return Some({ token_type: TagClose, from: start, to: self.pos })
+      return Some({ token_type: TagClose, from: start, to: self.pos, })
     }
 
     // Equals
     if c == '=' {
       self.pos += 1
-      return Some({ token_type: Equals, from: start, to: self.pos })
+      return Some({ token_type: Equals, from: start, to: self.pos, })
     }
 
     // Attribute value
@@ -262,7 +262,7 @@ pub fn XmlTokenizer::next_token(self : XmlTokenizer) -> XmlToken? {
       return Some(self.read_name())
     }
     self.pos += 1
-    return Some({ token_type: Unknown, from: start, to: self.pos })
+    return Some({ token_type: Unknown, from: start, to: self.pos, })
   }
 
   // Outside tag
@@ -290,14 +290,14 @@ pub fn XmlTokenizer::next_token(self : XmlTokenizer) -> XmlToken? {
   if c == '<' && self.peek_at(1) == Some('/') {
     self.pos += 2
     self.in_tag = true
-    return Some({ token_type: TagOpen, from: start, to: self.pos })
+    return Some({ token_type: TagOpen, from: start, to: self.pos, })
   }
 
   // Start tag
   if c == '<' {
     self.pos += 1
     self.in_tag = true
-    return Some({ token_type: TagOpen, from: start, to: self.pos })
+    return Some({ token_type: TagOpen, from: start, to: self.pos, })
   }
 
   // Entity
@@ -311,7 +311,7 @@ pub fn XmlTokenizer::next_token(self : XmlTokenizer) -> XmlToken? {
     if self.pos < self.len && self.chars[self.pos] == ';' {
       self.pos += 1
     }
-    return Some({ token_type: Entity, from: start, to: self.pos })
+    return Some({ token_type: Entity, from: start, to: self.pos, })
   }
 
   // Text content
@@ -319,7 +319,7 @@ pub fn XmlTokenizer::next_token(self : XmlTokenizer) -> XmlToken? {
     return Some(self.read_text())
   }
   self.pos += 1
-  Some({ token_type: Unknown, from: start, to: self.pos })
+  Some({ token_type: Unknown, from: start, to: self.pos, })
 }
 
 ///|
