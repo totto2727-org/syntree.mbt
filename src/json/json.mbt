@@ -10,6 +10,7 @@
 
 ///|
 /// JSON node type IDs
+#derive(Eq, Debug)
 pub(all) enum JsonNodeId {
   // Structural
   JsonDocument // Root
@@ -32,7 +33,7 @@ pub(all) enum JsonNodeId {
   PropertyName // "key" in "key": value
   // Error
   Error
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for JsonNodeId with fn output(self, logger) {
@@ -136,16 +137,17 @@ pub fn json_node_type(id : JsonNodeId) -> @syntree.NodeType {
 
 ///|
 /// Token produced by the tokenizer
+#derive(Eq, Debug)
 pub(all) struct JsonToken {
   node_type : JsonNodeId
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for JsonToken with fn output(self, logger) {
   logger.write_string("{node_type: ")
-  self.node_type.output(logger)
+  Show::output(self.node_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

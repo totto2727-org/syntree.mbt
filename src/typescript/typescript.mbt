@@ -10,6 +10,7 @@
 
 ///|
 /// TypeScript token types
+#derive(Eq, Debug)
 pub(all) enum TsTokenType {
   // Keywords
   Keyword // function, const, let, var, if, else, etc.
@@ -61,7 +62,7 @@ pub(all) enum TsTokenType {
   JsxExprEnd // } in JSX
   // Error
   Error
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for TsTokenType with fn output(self, logger) {
@@ -219,16 +220,17 @@ fn is_builtin_type(word : String) -> Bool {
 
 ///|
 /// A token with position information
+#derive(Eq, Debug)
 pub(all) struct TsToken {
   token_type : TsTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for TsToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")
@@ -242,6 +244,7 @@ pub impl Show for TsToken with fn output(self, logger) {
 
 ///|
 /// Parser context for JSX detection and template literals
+#derive(Eq, Debug)
 enum TsContext {
   Normal // Regular JS/TS code
   JsxTagStart // Just after < (need to read tag name)
@@ -250,7 +253,7 @@ enum TsContext {
   JsxClosingTag // Inside closing tag </xxx>
   JsxExpression // Inside {expr} in JSX
   TemplateExpr // Inside ${...} in template literal
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for TsContext with fn output(self, logger) {
@@ -1126,11 +1129,12 @@ pub fn TsTokenizer::tokenize_all(self : TsTokenizer) -> Array[TsToken] {
 ///|
 /// Tokenizer state for incremental tokenization
 /// Can be saved and restored to resume tokenization from a checkpoint
+#derive(Eq, Debug)
 pub(all) struct TokenizerState {
   pos : Int
   context_stack : Array[TsContext]
   last_token : TsTokenType?
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for TokenizerState with fn output(self, logger) {
@@ -1142,12 +1146,12 @@ pub impl Show for TokenizerState with fn output(self, logger) {
     if i > 0 {
       logger.write_string(", ")
     }
-    context.output(logger)
+    Show::output(context, logger)
   }
   logger.write_string("]")
   logger.write_string(", last_token: ")
   match self.last_token {
-    Some(token) => token.output(logger)
+    Some(token) => Show::output(token, logger)
     None => logger.write_string("None")
   }
   logger.write_string("}")

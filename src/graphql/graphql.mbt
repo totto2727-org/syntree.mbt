@@ -1,5 +1,6 @@
 ///|
 /// GraphQL Tokenizer
+#derive(Eq, Debug)
 pub(all) enum GraphqlTokenType {
   Keyword
   TypeKeyword
@@ -32,7 +33,7 @@ pub(all) enum GraphqlTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for GraphqlTokenType with fn output(self, logger) {
@@ -72,16 +73,17 @@ pub impl Show for GraphqlTokenType with fn output(self, logger) {
 }
 
 ///|
+#derive(Eq, Debug)
 pub(all) struct GraphqlToken {
   token_type : GraphqlTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for GraphqlToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mizchi/syntree/ruby"
+package "totto2727/syntree/ruby"
 
 import {
-  "mizchi/syntree",
+  "totto2727/syntree",
   "moonbitlang/core/debug",
 }
 

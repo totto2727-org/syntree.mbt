@@ -1,5 +1,6 @@
 ///|
 /// Haskell Tokenizer
+#derive(Eq, Debug)
 pub(all) enum HaskellTokenType {
   Keyword
   ModuleKeyword
@@ -38,7 +39,7 @@ pub(all) enum HaskellTokenType {
   Whitespace
   Newline
   Unknown
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for HaskellTokenType with fn output(self, logger) {
@@ -84,16 +85,17 @@ pub impl Show for HaskellTokenType with fn output(self, logger) {
 }
 
 ///|
+#derive(Eq, Debug)
 pub(all) struct HaskellToken {
   token_type : HaskellTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for HaskellToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

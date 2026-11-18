@@ -6,6 +6,7 @@
 
 ///|
 /// Bash token types
+#derive(Eq, Debug)
 pub(all) enum BashTokenType {
   // Keywords
   Keyword // if, then, else, fi, for, while, do, done, case, esac, etc.
@@ -58,7 +59,7 @@ pub(all) enum BashTokenType {
 
   // Error
   Error
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for BashTokenType with fn output(self, logger) {
@@ -106,16 +107,17 @@ pub impl Show for BashTokenType with fn output(self, logger) {
 
 ///|
 /// A token produced by the Bash tokenizer
+#derive(Eq, Debug)
 pub(all) struct BashToken {
   token_type : BashTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for BashToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

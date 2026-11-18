@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'fix/**'
   pull_request:
 
 jobs:
@@ -19,6 +20,8 @@ jobs:
       - name: Moon update
         run: moon update
       - name: Moon check
-        run: moon check --deny-warn --target js
+        run: moon check --deny-warn --warn-list=-25 --target js
+      - name: Moon build
+        run: moon build --target js
       - name: Moon test
-        run: moon test --target js
+        run: moon test --warn-list=-25 --target js

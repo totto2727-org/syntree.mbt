@@ -22,6 +22,7 @@
 
 ///|
 /// Node type identifier with metadata
+#derive(Eq, Debug)
 pub(all) struct NodeType {
   /// Unique identifier for this node type
   id : Int
@@ -29,7 +30,7 @@ pub(all) struct NodeType {
   name : String
   /// Whether this is an error node
   is_error : Bool
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for NodeType with fn output(self, logger) {

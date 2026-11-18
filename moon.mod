@@ -1,4 +1,4 @@
-name = "mizchi/syntree"
+name = "totto2727/syntree"
 
 version = "0.2.4"
 
@@ -8,7 +8,7 @@ preferred_target = "js"
 
 readme = "README.mbt.md"
 
-repository = "https://github.com/mizchi/syntree.mbt"
+repository = "https://github.com/totto2727-org/syntree.mbt"
 
 license = "MIT"
 

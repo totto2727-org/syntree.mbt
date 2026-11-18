@@ -6,6 +6,7 @@
 
 ///|
 /// Zig token types
+#derive(Eq, Debug)
 pub(all) enum ZigTokenType {
   // Keywords
   Keyword // if, else, while, for, return, etc.
@@ -51,7 +52,7 @@ pub(all) enum ZigTokenType {
 
   // Error
   Error
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for ZigTokenType with fn output(self, logger) {
@@ -96,16 +97,17 @@ pub impl Show for ZigTokenType with fn output(self, logger) {
 
 ///|
 /// A token produced by the Zig tokenizer
+#derive(Eq, Debug)
 pub(all) struct ZigToken {
   token_type : ZigTokenType
   from : Int
   to : Int
-} derive(Eq, Debug)
+}
 
 ///|
 pub impl Show for ZigToken with fn output(self, logger) {
   logger.write_string("{token_type: ")
-  self.token_type.output(logger)
+  Show::output(self.token_type, logger)
   logger.write_string(", from: ")
   logger.write_string(self.from.to_string())
   logger.write_string(", to: ")

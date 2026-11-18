@@ -43,7 +43,7 @@ let inline_markdown : String = "This is **bold** and *italic* and `code` text."
 
 ///|
 fn generate_mdx_doc(imports : Int, headings : Int, components : Int) -> String {
-  let buf = StringBuilder::new()
+  let buf = StringBuilder()
   buf.write_string("---\ntitle: Generated\n---\n\n")
   for i = 0; i < imports; i = i + 1 {
     buf.write_string("import Component\{i} from './Component\{i}'\n")
