@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mizchi/syntree"
+package "totto2727/syntree"
 
 import {
   "moonbitlang/core/debug",

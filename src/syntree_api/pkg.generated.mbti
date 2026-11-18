@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mizchi/syntree/syntree_api"
+package "totto2727/syntree/syntree_api"
 
 // Values
 pub fn highlight_bash(String) -> String

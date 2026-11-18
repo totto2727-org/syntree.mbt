@@ -2,7 +2,7 @@
 
 ///|
 
-///| Run with: moon bench --target js -p mizchi/syntree
+///| Run with: moon bench --target js -p totto2727/syntree
 
 // =============================================================================
 // Test Data Generation

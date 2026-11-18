@@ -6,10 +6,10 @@ See [upstream differences](docs/upstream-differences.md) for this fork's compati
 
 ## Packages
 
-- `mizchi/syntree` - core tree, cursor, highlight APIs, and extension mapping
-- `mizchi/syntree/<lang>` - language tokenizers + highlighters
-- `mizchi/syntree/highlight` - HTML rendering with inline styles
-- `mizchi/syntree/syntree_api` - JS exports for the bundled highlighters
+- `totto2727/syntree` - core tree, cursor, highlight APIs, and extension mapping
+- `totto2727/syntree/<lang>` - language tokenizers + highlighters
+- `totto2727/syntree/highlight` - HTML rendering with inline styles
+- `totto2727/syntree/syntree_api` - JS exports for the bundled highlighters
 
 ## Supported Languages (31)
 
@@ -23,9 +23,9 @@ Import only the languages you need for tree-shaking (Dead Code Elimination):
 
 ```moonbit
 import {
-  "mizchi/syntree"               // core + extension mapping
-  "mizchi/syntree/typescript"    // TypeScript/JavaScript only
-  "mizchi/syntree/rust"          // Rust only
+  "totto2727/syntree"               // core + extension mapping
+  "totto2727/syntree/typescript"    // TypeScript/JavaScript only
+  "totto2727/syntree/rust"          // Rust only
 }
 
 fn main {
@@ -68,7 +68,7 @@ fn main {
 `LineCache` provides line-based caching for efficient incremental syntax highlighting. It works with any language by accepting a highlight function:
 
 ```moonbit
-import { "mizchi/syntree", "mizchi/syntree/typescript" }
+import { "totto2727/syntree", "totto2727/syntree/typescript" }
 
 fn main {
   let source = "const x = 1\nlet y = 2"

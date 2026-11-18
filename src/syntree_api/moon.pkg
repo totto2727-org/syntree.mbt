@@ -1,5 +1,5 @@
 import {
-  "mizchi/syntree/highlight",
+  "totto2727/syntree/highlight",
 }
 
 options(
