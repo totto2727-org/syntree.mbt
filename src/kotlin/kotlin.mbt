@@ -92,8 +92,8 @@ pub impl Show for KotlinTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct KotlinToken {
   token_type : KotlinTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -111,8 +111,8 @@ pub impl Show for KotlinToken with fn output(self, logger) {
 pub(all) struct KotlinTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -138,11 +138,11 @@ let kotlin_modifiers : Array[String] = [
 ///|
 pub fn KotlinTokenizer::new(input : String) -> KotlinTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn KotlinTokenizer::peek_at(self : KotlinTokenizer, offset : Int) -> Char? {
+fn KotlinTokenizer::peek_at(self : KotlinTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -185,7 +185,7 @@ fn KotlinTokenizer::read_string(self : KotlinTokenizer) -> KotlinToken {
       }
       self.pos += 1
     }
-    return { token_type: MultilineString, from: start, to: self.pos }
+    return { token_type: MultilineString, from: start, to: self.pos, }
   }
   while self.pos < self.len {
     let c = self.chars[self.pos]
@@ -201,7 +201,7 @@ fn KotlinTokenizer::read_string(self : KotlinTokenizer) -> KotlinToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -216,7 +216,7 @@ fn KotlinTokenizer::read_char(self : KotlinTokenizer) -> KotlinToken {
   if self.pos < self.len && self.chars[self.pos] == '\'' {
     self.pos += 1
   }
-  { token_type: Char, from: start, to: self.pos }
+  { token_type: Char, from: start, to: self.pos, }
 }
 
 ///|
@@ -238,7 +238,7 @@ fn KotlinTokenizer::read_number(self : KotlinTokenizer) -> KotlinToken {
         }
       }
       self.read_number_suffix()
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'b' || next == 'B' {
       self.pos += 2
       while self.pos < self.len {
@@ -250,7 +250,7 @@ fn KotlinTokenizer::read_number(self : KotlinTokenizer) -> KotlinToken {
         }
       }
       self.read_number_suffix()
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -280,7 +280,7 @@ fn KotlinTokenizer::read_number(self : KotlinTokenizer) -> KotlinToken {
     }
   }
   self.read_number_suffix()
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -304,7 +304,7 @@ fn KotlinTokenizer::read_identifier(self : KotlinTokenizer) -> KotlinToken {
   // Check for label
   if self.pos < self.len && self.chars[self.pos] == '@' {
     self.pos += 1
-    return { token_type: Label, from: start, to: self.pos }
+    return { token_type: Label, from: start, to: self.pos, }
   }
   let value = String::from_array(self.chars[start:self.pos])
   let token_type = if value == "true" || value == "false" {
@@ -322,7 +322,7 @@ fn KotlinTokenizer::read_identifier(self : KotlinTokenizer) -> KotlinToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -343,13 +343,13 @@ pub fn KotlinTokenizer::next_token(self : KotlinTokenizer) -> KotlinToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comments
@@ -358,7 +358,7 @@ pub fn KotlinTokenizer::next_token(self : KotlinTokenizer) -> KotlinToken? {
       while self.pos < self.len && self.chars[self.pos] != '\n' {
         self.pos += 1
       }
-      return Some({ token_type: LineComment, from: start, to: self.pos })
+      return Some({ token_type: LineComment, from: start, to: self.pos, })
     } else if self.peek_at(1) == Some('*') {
       self.pos += 2
       let is_doc = self.pos < self.len && self.chars[self.pos] == '*'
@@ -370,7 +370,7 @@ pub fn KotlinTokenizer::next_token(self : KotlinTokenizer) -> KotlinToken? {
         self.pos += 1
       }
       let token_type = if is_doc { DocComment } else { BlockComment }
-      return Some({ token_type, from: start, to: self.pos })
+      return Some({ token_type, from: start, to: self.pos, })
     }
   }
 
@@ -380,7 +380,7 @@ pub fn KotlinTokenizer::next_token(self : KotlinTokenizer) -> KotlinToken? {
     while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
       self.pos += 1
     }
-    return Some({ token_type: Annotation, from: start, to: self.pos })
+    return Some({ token_type: Annotation, from: start, to: self.pos, })
   }
 
   // String
@@ -412,35 +412,35 @@ pub fn KotlinTokenizer::next_token(self : KotlinTokenizer) -> KotlinToken? {
   match two_char {
     "->" => {
       self.pos += 2
-      return Some({ token_type: Arrow, from: start, to: self.pos })
+      return Some({ token_type: Arrow, from: start, to: self.pos, })
     }
     "?:" => {
       self.pos += 2
-      return Some({ token_type: Elvis, from: start, to: self.pos })
+      return Some({ token_type: Elvis, from: start, to: self.pos, })
     }
     "?." => {
       self.pos += 2
-      return Some({ token_type: SafeCall, from: start, to: self.pos })
+      return Some({ token_type: SafeCall, from: start, to: self.pos, })
     }
     "!!" => {
       self.pos += 2
-      return Some({ token_type: NotNull, from: start, to: self.pos })
+      return Some({ token_type: NotNull, from: start, to: self.pos, })
     }
     ".." => {
       self.pos += 2
-      return Some({ token_type: Range, from: start, to: self.pos })
+      return Some({ token_type: Range, from: start, to: self.pos, })
     }
     "==" | "!=" | "<=" | ">=" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     "&&" | "||" => {
       self.pos += 2
-      return Some({ token_type: Logical, from: start, to: self.pos })
+      return Some({ token_type: Logical, from: start, to: self.pos, })
     }
     "+=" | "-=" | "*=" | "/=" | "%=" => {
       self.pos += 2
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -465,7 +465,7 @@ pub fn KotlinTokenizer::next_token(self : KotlinTokenizer) -> KotlinToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

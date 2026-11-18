@@ -66,8 +66,8 @@ pub impl Show for SqlTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct SqlToken {
   token_type : SqlTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -85,8 +85,8 @@ pub impl Show for SqlToken with fn output(self, logger) {
 pub(all) struct SqlTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -127,11 +127,11 @@ let sql_data_types : Array[String] = [
 ///|
 pub fn SqlTokenizer::new(input : String) -> SqlTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn SqlTokenizer::peek_at(self : SqlTokenizer, offset : Int) -> Char? {
+fn SqlTokenizer::peek_at(self : SqlTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -187,7 +187,7 @@ fn SqlTokenizer::read_string(self : SqlTokenizer) -> SqlToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -202,7 +202,7 @@ fn SqlTokenizer::read_quoted_identifier(self : SqlTokenizer) -> SqlToken {
   if self.pos < self.len {
     self.pos += 1
   }
-  { token_type: QuotedIdent, from: start, to: self.pos }
+  { token_type: QuotedIdent, from: start, to: self.pos, }
 }
 
 ///|
@@ -231,7 +231,7 @@ fn SqlTokenizer::read_number(self : SqlTokenizer) -> SqlToken {
       self.pos += 1
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -259,7 +259,7 @@ fn SqlTokenizer::read_identifier(self : SqlTokenizer) -> SqlToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -280,13 +280,13 @@ pub fn SqlTokenizer::next_token(self : SqlTokenizer) -> SqlToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Line comment
@@ -294,7 +294,7 @@ pub fn SqlTokenizer::next_token(self : SqlTokenizer) -> SqlToken? {
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return Some({ token_type: LineComment, from: start, to: self.pos })
+    return Some({ token_type: LineComment, from: start, to: self.pos, })
   }
 
   // Block comment
@@ -307,7 +307,7 @@ pub fn SqlTokenizer::next_token(self : SqlTokenizer) -> SqlToken? {
       }
       self.pos += 1
     }
-    return Some({ token_type: BlockComment, from: start, to: self.pos })
+    return Some({ token_type: BlockComment, from: start, to: self.pos, })
   }
 
   // String
@@ -326,7 +326,7 @@ pub fn SqlTokenizer::next_token(self : SqlTokenizer) -> SqlToken? {
     while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
       self.pos += 1
     }
-    return Some({ token_type: Parameter, from: start, to: self.pos })
+    return Some({ token_type: Parameter, from: start, to: self.pos, })
   }
 
   // Number
@@ -348,15 +348,15 @@ pub fn SqlTokenizer::next_token(self : SqlTokenizer) -> SqlToken? {
   match two_char {
     "<>" | "!=" | "<=" | ">=" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     ":=" => {
       self.pos += 2
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     "||" => {
       self.pos += 2
-      return Some({ token_type: Operator, from: start, to: self.pos })
+      return Some({ token_type: Operator, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -374,7 +374,7 @@ pub fn SqlTokenizer::next_token(self : SqlTokenizer) -> SqlToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

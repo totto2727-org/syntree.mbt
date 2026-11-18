@@ -26,7 +26,7 @@ fn generate_function_mbt() -> String {
 
 ///|
 /// Generate struct with fields
-fn generate_struct_mbt(fields : Int) -> String {
+fn generate_struct_mbt(fields : Int32) -> String {
   let buf = StringBuilder()
   buf.write_string("struct MyStruct {\n")
   for i = 0; i < fields; i = i + 1 {
@@ -40,7 +40,7 @@ fn generate_struct_mbt(fields : Int) -> String {
 
 ///|
 /// Generate enum with variants
-fn generate_enum_mbt(variants : Int) -> String {
+fn generate_enum_mbt(variants : Int32) -> String {
   let buf = StringBuilder()
   buf.write_string("enum MyEnum {\n")
   for i = 0; i < variants; i = i + 1 {
@@ -54,7 +54,7 @@ fn generate_enum_mbt(variants : Int) -> String {
 
 ///|
 /// Generate functions with string interpolation
-fn generate_interp_mbt(count : Int) -> String {
+fn generate_interp_mbt(count : Int32) -> String {
   let buf = StringBuilder()
   for i = 0; i < count; i = i + 1 {
     buf.write_string("let s")
@@ -68,7 +68,7 @@ fn generate_interp_mbt(count : Int) -> String {
 
 ///|
 /// Generate imports
-fn generate_imports_mbt(count : Int) -> String {
+fn generate_imports_mbt(count : Int32) -> String {
   let buf = StringBuilder()
   for i = 0; i < count; i = i + 1 {
     buf.write_string("///| Doc comment ")
@@ -83,7 +83,7 @@ fn generate_imports_mbt(count : Int) -> String {
 
 ///|
 /// Generate raw strings
-fn generate_raw_strings_mbt(lines : Int) -> String {
+fn generate_raw_strings_mbt(lines : Int32) -> String {
   let buf = StringBuilder()
   buf.write_string("let code =\n")
   for i = 0; i < lines; i = i + 1 {

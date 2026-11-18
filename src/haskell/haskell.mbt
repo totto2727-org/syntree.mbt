@@ -88,8 +88,8 @@ pub impl Show for HaskellTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct HaskellToken {
   token_type : HaskellTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -107,8 +107,8 @@ pub impl Show for HaskellToken with fn output(self, logger) {
 pub(all) struct HaskellTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -130,11 +130,11 @@ let haskell_type_keywords : Array[String] = [
 ///|
 pub fn HaskellTokenizer::new(input : String) -> HaskellTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn HaskellTokenizer::peek_at(self : HaskellTokenizer, offset : Int) -> Char? {
+fn HaskellTokenizer::peek_at(self : HaskellTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -210,7 +210,7 @@ fn HaskellTokenizer::read_string(self : HaskellTokenizer) -> HaskellToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -229,7 +229,7 @@ fn HaskellTokenizer::read_char(self : HaskellTokenizer) -> HaskellToken {
   if self.pos < self.len && self.chars[self.pos] == '\'' {
     self.pos += 1
   }
-  { token_type: Char, from: start, to: self.pos }
+  { token_type: Char, from: start, to: self.pos, }
 }
 
 ///|
@@ -250,7 +250,7 @@ fn HaskellTokenizer::read_number(self : HaskellTokenizer) -> HaskellToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'o' || next == 'O' {
       self.pos += 2
       while self.pos < self.len {
@@ -261,7 +261,7 @@ fn HaskellTokenizer::read_number(self : HaskellTokenizer) -> HaskellToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'b' || next == 'B' {
       self.pos += 2
       while self.pos < self.len {
@@ -272,7 +272,7 @@ fn HaskellTokenizer::read_number(self : HaskellTokenizer) -> HaskellToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -301,7 +301,7 @@ fn HaskellTokenizer::read_number(self : HaskellTokenizer) -> HaskellToken {
       self.pos += 1
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -327,7 +327,7 @@ fn HaskellTokenizer::read_identifier(self : HaskellTokenizer) -> HaskellToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -340,7 +340,7 @@ fn HaskellTokenizer::read_operator(self : HaskellTokenizer) -> HaskellToken {
   // Lambda
   if c == '\\' {
     self.pos += 1
-    return { token_type: Lambda, from: start, to: self.pos }
+    return { token_type: Lambda, from: start, to: self.pos, }
   }
 
   // Read operator chars
@@ -359,7 +359,7 @@ fn HaskellTokenizer::read_operator(self : HaskellTokenizer) -> HaskellToken {
     _ if op.length() > 0 && op.iter().nth(0).unwrap() == ':' => Constructor
     _ => Operator
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -380,13 +380,13 @@ pub fn HaskellTokenizer::next_token(self : HaskellTokenizer) -> HaskellToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Line comment
@@ -396,7 +396,7 @@ pub fn HaskellTokenizer::next_token(self : HaskellTokenizer) -> HaskellToken? {
       while self.pos < self.len && self.chars[self.pos] != '\n' {
         self.pos += 1
       }
-      return Some({ token_type: LineComment, from: start, to: self.pos })
+      return Some({ token_type: LineComment, from: start, to: self.pos, })
     }
   }
 
@@ -417,7 +417,7 @@ pub fn HaskellTokenizer::next_token(self : HaskellTokenizer) -> HaskellToken? {
       }
     }
     let token_type = if is_pragma { Pragma } else { BlockComment }
-    return Some({ token_type, from: start, to: self.pos })
+    return Some({ token_type, from: start, to: self.pos, })
   }
 
   // String
@@ -448,7 +448,7 @@ pub fn HaskellTokenizer::next_token(self : HaskellTokenizer) -> HaskellToken? {
   // Backtick operator
   if c == '`' {
     self.pos += 1
-    return Some({ token_type: Backtick, from: start, to: self.pos })
+    return Some({ token_type: Backtick, from: start, to: self.pos, })
   }
 
   // Operators
@@ -470,7 +470,7 @@ pub fn HaskellTokenizer::next_token(self : HaskellTokenizer) -> HaskellToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

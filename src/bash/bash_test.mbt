@@ -437,3 +437,6 @@ test "edge: unclosed single quote" {
   let tokens = tokenizer.tokenize_all()
   assert_true(tokens.length() >= 1)
 }
+
+///|
+using @bash {type BashTokenizer, highlight_bash, highlight_bash_to_html}

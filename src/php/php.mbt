@@ -98,8 +98,8 @@ pub impl Show for PhpTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct PhpToken {
   token_type : PhpTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -117,8 +117,8 @@ pub impl Show for PhpToken with fn output(self, logger) {
 pub(all) struct PhpTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -150,11 +150,11 @@ let php_type_keywords : Array[String] = [
 ///|
 pub fn PhpTokenizer::new(input : String) -> PhpTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn PhpTokenizer::peek_at(self : PhpTokenizer, offset : Int) -> Char? {
+fn PhpTokenizer::peek_at(self : PhpTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -193,7 +193,7 @@ fn PhpTokenizer::read_string(self : PhpTokenizer, quote : Char) -> PhpToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -249,7 +249,7 @@ fn PhpTokenizer::read_heredoc(self : PhpTokenizer) -> PhpToken {
       self.pos += 1
     }
   }
-  { token_type: HeredocString, from: start, to: self.pos }
+  { token_type: HeredocString, from: start, to: self.pos, }
 }
 
 ///|
@@ -270,7 +270,7 @@ fn PhpTokenizer::read_number(self : PhpTokenizer) -> PhpToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'b' || next == 'B' {
       self.pos += 2
       while self.pos < self.len {
@@ -281,7 +281,7 @@ fn PhpTokenizer::read_number(self : PhpTokenizer) -> PhpToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'o' || next == 'O' {
       self.pos += 2
       while self.pos < self.len {
@@ -292,7 +292,7 @@ fn PhpTokenizer::read_number(self : PhpTokenizer) -> PhpToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -321,7 +321,7 @@ fn PhpTokenizer::read_number(self : PhpTokenizer) -> PhpToken {
       self.pos += 1
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -350,7 +350,7 @@ fn PhpTokenizer::read_identifier(self : PhpTokenizer) -> PhpToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -374,7 +374,7 @@ fn PhpTokenizer::read_variable(self : PhpTokenizer) -> PhpToken {
   while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: Variable, from: start, to: self.pos }
+  { token_type: Variable, from: start, to: self.pos, }
 }
 
 ///|
@@ -395,13 +395,13 @@ pub fn PhpTokenizer::next_token(self : PhpTokenizer) -> PhpToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // PHP open tag
@@ -413,13 +413,13 @@ pub fn PhpTokenizer::next_token(self : PhpTokenizer) -> PhpToken? {
         self.pos += 3
       }
     }
-    return Some({ token_type: OpenTag, from: start, to: self.pos })
+    return Some({ token_type: OpenTag, from: start, to: self.pos, })
   }
 
   // PHP close tag
   if c == '?' && self.peek_at(1) == Some('>') {
     self.pos += 2
-    return Some({ token_type: CloseTag, from: start, to: self.pos })
+    return Some({ token_type: CloseTag, from: start, to: self.pos, })
   }
 
   // Comments
@@ -428,7 +428,7 @@ pub fn PhpTokenizer::next_token(self : PhpTokenizer) -> PhpToken? {
       while self.pos < self.len && self.chars[self.pos] != '\n' {
         self.pos += 1
       }
-      return Some({ token_type: LineComment, from: start, to: self.pos })
+      return Some({ token_type: LineComment, from: start, to: self.pos, })
     } else if self.peek_at(1) == Some('*') {
       self.pos += 2
       let is_doc = self.pos < self.len && self.chars[self.pos] == '*'
@@ -440,7 +440,7 @@ pub fn PhpTokenizer::next_token(self : PhpTokenizer) -> PhpToken? {
         self.pos += 1
       }
       let token_type = if is_doc { DocComment } else { BlockComment }
-      return Some({ token_type, from: start, to: self.pos })
+      return Some({ token_type, from: start, to: self.pos, })
     }
   }
 
@@ -449,7 +449,7 @@ pub fn PhpTokenizer::next_token(self : PhpTokenizer) -> PhpToken? {
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return Some({ token_type: LineComment, from: start, to: self.pos })
+    return Some({ token_type: LineComment, from: start, to: self.pos, })
   }
 
   // Attribute
@@ -464,7 +464,7 @@ pub fn PhpTokenizer::next_token(self : PhpTokenizer) -> PhpToken? {
       }
       self.pos += 1
     }
-    return Some({ token_type: Attribute, from: start, to: self.pos })
+    return Some({ token_type: Attribute, from: start, to: self.pos, })
   }
 
   // Heredoc/Nowdoc
@@ -516,54 +516,54 @@ pub fn PhpTokenizer::next_token(self : PhpTokenizer) -> PhpToken? {
       } else {
         Assignment
       }
-      return Some({ token_type, from: start, to: self.pos })
+      return Some({ token_type, from: start, to: self.pos, })
     }
     if three_char == "..." {
       self.pos += 3
-      return Some({ token_type: Operator, from: start, to: self.pos })
+      return Some({ token_type: Operator, from: start, to: self.pos, })
     }
   }
   match two_char {
     "->" => {
       self.pos += 2
-      return Some({ token_type: Arrow, from: start, to: self.pos })
+      return Some({ token_type: Arrow, from: start, to: self.pos, })
     }
     "=>" => {
       self.pos += 2
-      return Some({ token_type: DoubleArrow, from: start, to: self.pos })
+      return Some({ token_type: DoubleArrow, from: start, to: self.pos, })
     }
     "::" => {
       self.pos += 2
-      return Some({ token_type: Scope, from: start, to: self.pos })
+      return Some({ token_type: Scope, from: start, to: self.pos, })
     }
     "??" => {
       self.pos += 2
-      return Some({ token_type: NullCoalesce, from: start, to: self.pos })
+      return Some({ token_type: NullCoalesce, from: start, to: self.pos, })
     }
     "?-" =>
       if self.peek_at(2) == Some('>') {
         self.pos += 3
-        return Some({ token_type: NullSafe, from: start, to: self.pos })
+        return Some({ token_type: NullSafe, from: start, to: self.pos, })
       }
     "==" | "!=" | "<=" | ">=" | "<>" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     "&&" | "||" => {
       self.pos += 2
-      return Some({ token_type: Logical, from: start, to: self.pos })
+      return Some({ token_type: Logical, from: start, to: self.pos, })
     }
     "++" | "--" => {
       self.pos += 2
-      return Some({ token_type: Increment, from: start, to: self.pos })
+      return Some({ token_type: Increment, from: start, to: self.pos, })
     }
     "+=" | "-=" | "*=" | "/=" | "%=" | ".=" | "&=" | "|=" | "^=" => {
       self.pos += 2
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     "**" | "<<" | ">>" => {
       self.pos += 2
-      return Some({ token_type: Operator, from: start, to: self.pos })
+      return Some({ token_type: Operator, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -589,7 +589,7 @@ pub fn PhpTokenizer::next_token(self : PhpTokenizer) -> PhpToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

@@ -42,7 +42,11 @@ let code_fence : String =
 let inline_markdown : String = "This is **bold** and *italic* and `code` text."
 
 ///|
-fn generate_mdx_doc(imports : Int, headings : Int, components : Int) -> String {
+fn generate_mdx_doc(
+  imports : Int32,
+  headings : Int32,
+  components : Int32,
+) -> String {
   let buf = StringBuilder()
   buf.write_string("---\ntitle: Generated\n---\n\n")
   for i = 0; i < imports; i = i + 1 {

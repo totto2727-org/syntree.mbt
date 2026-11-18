@@ -92,8 +92,8 @@ pub impl Show for DartTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct DartToken {
   token_type : DartTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -111,8 +111,8 @@ pub impl Show for DartToken with fn output(self, logger) {
 pub(all) struct DartTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -144,11 +144,11 @@ let dart_builtin_types : Array[String] = [
 ///|
 pub fn DartTokenizer::new(input : String) -> DartTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn DartTokenizer::peek_at(self : DartTokenizer, offset : Int) -> Char? {
+fn DartTokenizer::peek_at(self : DartTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -195,7 +195,7 @@ fn DartTokenizer::read_string(self : DartTokenizer, quote : Char) -> DartToken {
         self.pos += 1
       }
     }
-    return { token_type: MultilineString, from: start, to: self.pos }
+    return { token_type: MultilineString, from: start, to: self.pos, }
   }
   while self.pos < self.len {
     let c = self.chars[self.pos]
@@ -210,7 +210,7 @@ fn DartTokenizer::read_string(self : DartTokenizer, quote : Char) -> DartToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -245,7 +245,7 @@ fn DartTokenizer::read_raw_string(
       self.pos += 1
     }
   }
-  { token_type: RawString, from: start, to: self.pos }
+  { token_type: RawString, from: start, to: self.pos, }
 }
 
 ///|
@@ -265,7 +265,7 @@ fn DartTokenizer::read_number(self : DartTokenizer) -> DartToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len && is_digit(self.chars[self.pos]) {
@@ -291,7 +291,7 @@ fn DartTokenizer::read_number(self : DartTokenizer) -> DartToken {
       self.pos += 1
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -327,7 +327,7 @@ fn DartTokenizer::read_identifier(self : DartTokenizer) -> DartToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -348,13 +348,13 @@ pub fn DartTokenizer::next_token(self : DartTokenizer) -> DartToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comments
@@ -365,7 +365,7 @@ pub fn DartTokenizer::next_token(self : DartTokenizer) -> DartToken? {
         self.pos += 1
       }
       let token_type = if is_doc { DocComment } else { LineComment }
-      return Some({ token_type, from: start, to: self.pos })
+      return Some({ token_type, from: start, to: self.pos, })
     } else if self.peek_at(1) == Some('*') {
       self.pos += 2
       let is_doc = self.pos < self.len && self.chars[self.pos] == '*'
@@ -377,7 +377,7 @@ pub fn DartTokenizer::next_token(self : DartTokenizer) -> DartToken? {
         self.pos += 1
       }
       let token_type = if is_doc { DocComment } else { BlockComment }
-      return Some({ token_type, from: start, to: self.pos })
+      return Some({ token_type, from: start, to: self.pos, })
     }
   }
 
@@ -387,7 +387,7 @@ pub fn DartTokenizer::next_token(self : DartTokenizer) -> DartToken? {
     while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
       self.pos += 1
     }
-    return Some({ token_type: Annotation, from: start, to: self.pos })
+    return Some({ token_type: Annotation, from: start, to: self.pos, })
   }
 
   // String
@@ -414,35 +414,35 @@ pub fn DartTokenizer::next_token(self : DartTokenizer) -> DartToken? {
   match two_char {
     "=>" => {
       self.pos += 2
-      return Some({ token_type: Arrow, from: start, to: self.pos })
+      return Some({ token_type: Arrow, from: start, to: self.pos, })
     }
     ".." => {
       self.pos += 2
-      return Some({ token_type: Cascade, from: start, to: self.pos })
+      return Some({ token_type: Cascade, from: start, to: self.pos, })
     }
     "??" | "?." => {
       self.pos += 2
-      return Some({ token_type: NullAware, from: start, to: self.pos })
+      return Some({ token_type: NullAware, from: start, to: self.pos, })
     }
     "==" | "!=" | "<=" | ">=" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     "&&" | "||" => {
       self.pos += 2
-      return Some({ token_type: Logical, from: start, to: self.pos })
+      return Some({ token_type: Logical, from: start, to: self.pos, })
     }
     "++" | "--" => {
       self.pos += 2
-      return Some({ token_type: Increment, from: start, to: self.pos })
+      return Some({ token_type: Increment, from: start, to: self.pos, })
     }
     "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" | "~/=" => {
       self.pos += 2
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     "<<" | ">>" | "~/" => {
       self.pos += 2
-      return Some({ token_type: Operator, from: start, to: self.pos })
+      return Some({ token_type: Operator, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -468,7 +468,7 @@ pub fn DartTokenizer::next_token(self : DartTokenizer) -> DartToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

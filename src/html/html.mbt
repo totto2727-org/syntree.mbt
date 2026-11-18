@@ -60,8 +60,8 @@ pub impl Show for HtmlTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct HtmlToken {
   token_type : HtmlTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -84,15 +84,15 @@ pub impl Show for HtmlToken with fn output(self, logger) {
 pub(all) struct HtmlTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
 /// Create a new HTML tokenizer
 pub fn HtmlTokenizer::new(input : String) -> HtmlTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
@@ -113,7 +113,7 @@ fn HtmlTokenizer::_peek(self : HtmlTokenizer) -> Char? {
 
 ///|
 /// Peek character at offset
-fn HtmlTokenizer::peek_at(self : HtmlTokenizer, offset : Int) -> Char? {
+fn HtmlTokenizer::peek_at(self : HtmlTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -213,7 +213,7 @@ fn HtmlTokenizer::read_comment(self : HtmlTokenizer) -> HtmlToken {
     }
     self.pos += 1
   }
-  { token_type: Comment, from: start, to: self.pos }
+  { token_type: Comment, from: start, to: self.pos, }
 }
 
 ///|
@@ -230,7 +230,7 @@ fn HtmlTokenizer::read_doctype(self : HtmlTokenizer) -> HtmlToken {
   if self.pos < self.len {
     self.pos += 1 // skip >
   }
-  { token_type: Doctype, from: start, to: self.pos }
+  { token_type: Doctype, from: start, to: self.pos, }
 }
 
 ///|
@@ -248,7 +248,7 @@ fn HtmlTokenizer::read_cdata(self : HtmlTokenizer) -> HtmlToken {
     }
     self.pos += 1
   }
-  { token_type: CData, from: start, to: self.pos }
+  { token_type: CData, from: start, to: self.pos, }
 }
 
 ///|
@@ -258,7 +258,7 @@ fn HtmlTokenizer::read_tag_name(self : HtmlTokenizer) -> HtmlToken {
   while self.pos < self.len && is_name_char(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: TagName, from: start, to: self.pos }
+  { token_type: TagName, from: start, to: self.pos, }
 }
 
 ///|
@@ -268,7 +268,7 @@ fn HtmlTokenizer::read_attr_name(self : HtmlTokenizer) -> HtmlToken {
   while self.pos < self.len && is_name_char(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: AttrName, from: start, to: self.pos }
+  { token_type: AttrName, from: start, to: self.pos, }
 }
 
 ///|
@@ -297,7 +297,7 @@ fn HtmlTokenizer::read_attr_value(self : HtmlTokenizer) -> HtmlToken {
       }
     }
   }
-  { token_type: AttrValue, from: start, to: self.pos }
+  { token_type: AttrValue, from: start, to: self.pos, }
 }
 
 ///|
@@ -307,7 +307,7 @@ fn HtmlTokenizer::read_text(self : HtmlTokenizer) -> HtmlToken {
   while self.pos < self.len && self.chars[self.pos] != '<' {
     self.pos += 1
   }
-  { token_type: Text, from: start, to: self.pos }
+  { token_type: Text, from: start, to: self.pos, }
 }
 
 ///|
@@ -328,7 +328,7 @@ pub fn HtmlTokenizer::tokenize_all(self : HtmlTokenizer) -> Array[HtmlToken] {
         // Closing tag: </
         let start = self.pos
         self.pos += 2
-        tokens.push({ token_type: TagOpenEnd, from: start, to: self.pos })
+        tokens.push({ token_type: TagOpenEnd, from: start, to: self.pos, })
 
         // Tag name
         self.skip_whitespace()
@@ -341,13 +341,13 @@ pub fn HtmlTokenizer::tokenize_all(self : HtmlTokenizer) -> Array[HtmlToken] {
         if self.pos < self.len && self.chars[self.pos] == '>' {
           let start = self.pos
           self.pos += 1
-          tokens.push({ token_type: TagClose, from: start, to: self.pos })
+          tokens.push({ token_type: TagClose, from: start, to: self.pos, })
         }
       } else {
         // Opening tag: <
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: TagOpen, from: start, to: self.pos })
+        tokens.push({ token_type: TagOpen, from: start, to: self.pos, })
 
         // Tag name
         if self.pos < self.len && is_name_char(self.chars[self.pos]) {
@@ -364,12 +364,16 @@ pub fn HtmlTokenizer::tokenize_all(self : HtmlTokenizer) -> Array[HtmlToken] {
           if c == '>' {
             let start = self.pos
             self.pos += 1
-            tokens.push({ token_type: TagClose, from: start, to: self.pos })
+            tokens.push({ token_type: TagClose, from: start, to: self.pos, })
             break
           } else if c == '/' && self.peek_at(1) == Some('>') {
             let start = self.pos
             self.pos += 2
-            tokens.push({ token_type: TagSlashClose, from: start, to: self.pos })
+            tokens.push({
+              token_type: TagSlashClose,
+              from: start,
+              to: self.pos,
+            })
             break
           } else if is_name_char(c) {
             // Attribute name
@@ -380,7 +384,7 @@ pub fn HtmlTokenizer::tokenize_all(self : HtmlTokenizer) -> Array[HtmlToken] {
             if self.pos < self.len && self.chars[self.pos] == '=' {
               let start = self.pos
               self.pos += 1
-              tokens.push({ token_type: AttrEquals, from: start, to: self.pos })
+              tokens.push({ token_type: AttrEquals, from: start, to: self.pos, })
               self.skip_whitespace()
 
               // Attribute value

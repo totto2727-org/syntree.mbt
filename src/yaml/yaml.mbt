@@ -82,8 +82,8 @@ pub impl Show for YamlTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct YamlToken {
   token_type : YamlTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -106,8 +106,8 @@ pub impl Show for YamlToken with fn output(self, logger) {
 pub(all) struct YamlTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   priv mut at_line_start : Bool
   priv mut expect_value : Bool
 }
@@ -134,7 +134,7 @@ pub fn YamlTokenizer::at_end(self : YamlTokenizer) -> Bool {
 
 ///|
 /// Peek character at offset
-fn YamlTokenizer::peek_at(self : YamlTokenizer, offset : Int) -> Char? {
+fn YamlTokenizer::peek_at(self : YamlTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -179,7 +179,7 @@ fn YamlTokenizer::read_comment(self : YamlTokenizer) -> YamlToken {
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: Comment, from: start, to: self.pos }
+  { token_type: Comment, from: start, to: self.pos, }
 }
 
 ///|
@@ -200,7 +200,7 @@ fn YamlTokenizer::read_single_string(self : YamlTokenizer) -> YamlToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -219,7 +219,7 @@ fn YamlTokenizer::read_double_string(self : YamlTokenizer) -> YamlToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -330,7 +330,7 @@ fn YamlTokenizer::read_anchor(self : YamlTokenizer) -> YamlToken {
   while self.pos < self.len && is_alnum(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: Anchor, from: start, to: self.pos }
+  { token_type: Anchor, from: start, to: self.pos, }
 }
 
 ///|
@@ -341,7 +341,7 @@ fn YamlTokenizer::read_alias(self : YamlTokenizer) -> YamlToken {
   while self.pos < self.len && is_alnum(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: Alias, from: start, to: self.pos }
+  { token_type: Alias, from: start, to: self.pos, }
 }
 
 ///|
@@ -360,7 +360,7 @@ fn YamlTokenizer::read_tag(self : YamlTokenizer) -> YamlToken {
       break
     }
   }
-  { token_type: Tag, from: start, to: self.pos }
+  { token_type: Tag, from: start, to: self.pos, }
 }
 
 ///|
@@ -370,7 +370,7 @@ fn YamlTokenizer::read_directive(self : YamlTokenizer) -> YamlToken {
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: Directive, from: start, to: self.pos }
+  { token_type: Directive, from: start, to: self.pos, }
 }
 
 ///|
@@ -397,15 +397,15 @@ fn YamlTokenizer::read_unquoted(self : YamlTokenizer) -> YamlToken {
   }
   let text = String::from_array(self.chars[start:self.pos])
   if is_bool(text) {
-    { token_type: Bool, from: start, to: self.pos }
+    { token_type: Bool, from: start, to: self.pos, }
   } else if is_null(text) {
-    { token_type: Null, from: start, to: self.pos }
+    { token_type: Null, from: start, to: self.pos, }
   } else if is_number_str(text) {
-    { token_type: Number, from: start, to: self.pos }
+    { token_type: Number, from: start, to: self.pos, }
   } else if self.expect_value {
-    { token_type: Value, from: start, to: self.pos }
+    { token_type: Value, from: start, to: self.pos, }
   } else {
-    { token_type: Key, from: start, to: self.pos }
+    { token_type: Key, from: start, to: self.pos, }
   }
 }
 
@@ -447,7 +447,7 @@ pub fn YamlTokenizer::tokenize_all(self : YamlTokenizer) -> Array[YamlToken] {
       self.peek_at(2) == Some('-') {
       let start = self.pos
       self.pos += 3
-      tokens.push({ token_type: Directive, from: start, to: self.pos })
+      tokens.push({ token_type: Directive, from: start, to: self.pos, })
       continue
     }
     if self.at_line_start &&
@@ -456,7 +456,7 @@ pub fn YamlTokenizer::tokenize_all(self : YamlTokenizer) -> Array[YamlToken] {
       self.peek_at(2) == Some('.') {
       let start = self.pos
       self.pos += 3
-      tokens.push({ token_type: Directive, from: start, to: self.pos })
+      tokens.push({ token_type: Directive, from: start, to: self.pos, })
       continue
     }
 
@@ -502,7 +502,7 @@ pub fn YamlTokenizer::tokenize_all(self : YamlTokenizer) -> Array[YamlToken] {
       ) {
       let start = self.pos
       self.pos += 1
-      tokens.push({ token_type: Dash, from: start, to: self.pos })
+      tokens.push({ token_type: Dash, from: start, to: self.pos, })
       self.at_line_start = false
       self.expect_value = true
       continue
@@ -517,7 +517,7 @@ pub fn YamlTokenizer::tokenize_all(self : YamlTokenizer) -> Array[YamlToken] {
       ) {
       let start = self.pos
       self.pos += 1
-      tokens.push({ token_type: Colon, from: start, to: self.pos })
+      tokens.push({ token_type: Colon, from: start, to: self.pos, })
       self.expect_value = true
       continue
     }
@@ -536,7 +536,7 @@ pub fn YamlTokenizer::tokenize_all(self : YamlTokenizer) -> Array[YamlToken] {
           break
         }
       }
-      tokens.push({ token_type: tt, from: start, to: self.pos })
+      tokens.push({ token_type: tt, from: start, to: self.pos, })
       continue
     }
 
@@ -545,31 +545,31 @@ pub fn YamlTokenizer::tokenize_all(self : YamlTokenizer) -> Array[YamlToken] {
       '[' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BracketOpen, from: start, to: self.pos })
+        tokens.push({ token_type: BracketOpen, from: start, to: self.pos, })
         self.expect_value = true
       }
       ']' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BracketClose, from: start, to: self.pos })
+        tokens.push({ token_type: BracketClose, from: start, to: self.pos, })
         self.expect_value = false
       }
       '{' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceOpen, from: start, to: self.pos })
+        tokens.push({ token_type: BraceOpen, from: start, to: self.pos, })
         self.expect_value = false
       }
       '}' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceClose, from: start, to: self.pos })
+        tokens.push({ token_type: BraceClose, from: start, to: self.pos, })
         self.expect_value = false
       }
       ',' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Comma, from: start, to: self.pos })
+        tokens.push({ token_type: Comma, from: start, to: self.pos, })
         self.expect_value = true
       }
       _ => {

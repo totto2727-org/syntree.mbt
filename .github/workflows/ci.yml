@@ -1,27 +1,28 @@
 name: CI
 
+# Keep this trigger when creating a project from the template.
+# Change it only for an explicit user request or a demonstrated project requirement.
+# Do not replace main-push publication with tag or release triggers.
 on:
-  push:
-    branches:
-      - main
-      - 'fix/**'
   pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
-  test:
+  check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install MoonBit CLI
-        run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
-          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
-      - name: Moon update
-        run: moon update
-      - name: Moon check
-        run: moon check --deny-warn --warn-list=-25 --target js
-      - name: Moon build
-        run: moon build --target js
-      - name: Moon test
-        run: moon test --warn-list=-25 --target js
+      - uses: actions/checkout@v7
+      - uses: totto2727-org/monorepo/.github/actions/setup-nix@main
+        with:
+          dev-shell: ci
+      - uses: totto2727-org/monorepo/.github/actions/setup-moonbit@main
+        with:
+          dev-shell: ci
+      - uses: totto2727-org/monorepo/.github/actions/check-moonbit@main
+        with:
+          dev-shell: ci

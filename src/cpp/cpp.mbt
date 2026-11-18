@@ -82,8 +82,8 @@ pub impl Show for CppTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct CppToken {
   token_type : CppTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -101,8 +101,8 @@ pub impl Show for CppToken with fn output(self, logger) {
 pub(all) struct CppTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
@@ -131,11 +131,11 @@ let cpp_type_keywords : Array[String] = [
 ///|
 pub fn CppTokenizer::new(input : String) -> CppTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
-fn CppTokenizer::peek_at(self : CppTokenizer, offset : Int) -> Char? {
+fn CppTokenizer::peek_at(self : CppTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -179,7 +179,7 @@ fn CppTokenizer::read_string(self : CppTokenizer) -> CppToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -216,7 +216,7 @@ fn CppTokenizer::read_raw_string(self : CppTokenizer) -> CppToken {
     }
     self.pos += 1
   }
-  { token_type: RawString, from: start, to: self.pos }
+  { token_type: RawString, from: start, to: self.pos, }
 }
 
 ///|
@@ -231,7 +231,7 @@ fn CppTokenizer::read_char(self : CppTokenizer) -> CppToken {
   if self.pos < self.len && self.chars[self.pos] == '\'' {
     self.pos += 1
   }
-  { token_type: Char, from: start, to: self.pos }
+  { token_type: Char, from: start, to: self.pos, }
 }
 
 ///|
@@ -250,7 +250,7 @@ fn CppTokenizer::read_number(self : CppTokenizer) -> CppToken {
         }
       }
       self.read_number_suffix()
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     } else if next == 'b' || next == 'B' {
       self.pos += 2
       while self.pos < self.len {
@@ -262,7 +262,7 @@ fn CppTokenizer::read_number(self : CppTokenizer) -> CppToken {
         }
       }
       self.read_number_suffix()
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
   while self.pos < self.len &&
@@ -292,7 +292,7 @@ fn CppTokenizer::read_number(self : CppTokenizer) -> CppToken {
     }
   }
   self.read_number_suffix()
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -326,7 +326,7 @@ fn CppTokenizer::read_identifier(self : CppTokenizer) -> CppToken {
   } else {
     Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -340,7 +340,7 @@ fn CppTokenizer::read_preprocessor(self : CppTokenizer) -> CppToken {
   while self.pos < self.len && is_id_continue(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: Preprocessor, from: start, to: self.pos }
+  { token_type: Preprocessor, from: start, to: self.pos, }
 }
 
 ///|
@@ -361,13 +361,13 @@ pub fn CppTokenizer::next_token(self : CppTokenizer) -> CppToken? {
         break
       }
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
   if c == '\n' {
     self.pos += 1
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comments
@@ -376,7 +376,7 @@ pub fn CppTokenizer::next_token(self : CppTokenizer) -> CppToken? {
       while self.pos < self.len && self.chars[self.pos] != '\n' {
         self.pos += 1
       }
-      return Some({ token_type: LineComment, from: start, to: self.pos })
+      return Some({ token_type: LineComment, from: start, to: self.pos, })
     } else if self.peek_at(1) == Some('*') {
       self.pos += 2
       while self.pos < self.len {
@@ -386,7 +386,7 @@ pub fn CppTokenizer::next_token(self : CppTokenizer) -> CppToken? {
         }
         self.pos += 1
       }
-      return Some({ token_type: BlockComment, from: start, to: self.pos })
+      return Some({ token_type: BlockComment, from: start, to: self.pos, })
     }
   }
 
@@ -423,7 +423,7 @@ pub fn CppTokenizer::next_token(self : CppTokenizer) -> CppToken? {
   // Ellipsis
   if c == '.' && self.peek_at(1) == Some('.') && self.peek_at(2) == Some('.') {
     self.pos += 3
-    return Some({ token_type: Ellipsis, from: start, to: self.pos })
+    return Some({ token_type: Ellipsis, from: start, to: self.pos, })
   }
 
   // Multi-char operators
@@ -439,41 +439,41 @@ pub fn CppTokenizer::next_token(self : CppTokenizer) -> CppToken? {
     let three_char = two_char + c3.to_string()
     if three_char == "<<=" || three_char == ">>=" {
       self.pos += 3
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     if three_char == "<=>" {
       self.pos += 3
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
   }
   match two_char {
     "->" => {
       self.pos += 2
-      return Some({ token_type: Arrow, from: start, to: self.pos })
+      return Some({ token_type: Arrow, from: start, to: self.pos, })
     }
     "::" => {
       self.pos += 2
-      return Some({ token_type: Scope, from: start, to: self.pos })
+      return Some({ token_type: Scope, from: start, to: self.pos, })
     }
     "==" | "!=" | "<=" | ">=" => {
       self.pos += 2
-      return Some({ token_type: Comparison, from: start, to: self.pos })
+      return Some({ token_type: Comparison, from: start, to: self.pos, })
     }
     "&&" | "||" => {
       self.pos += 2
-      return Some({ token_type: Logical, from: start, to: self.pos })
+      return Some({ token_type: Logical, from: start, to: self.pos, })
     }
     "++" | "--" => {
       self.pos += 2
-      return Some({ token_type: Increment, from: start, to: self.pos })
+      return Some({ token_type: Increment, from: start, to: self.pos, })
     }
     "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^=" => {
       self.pos += 2
-      return Some({ token_type: Assignment, from: start, to: self.pos })
+      return Some({ token_type: Assignment, from: start, to: self.pos, })
     }
     "<<" | ">>" => {
       self.pos += 2
-      return Some({ token_type: Bitwise, from: start, to: self.pos })
+      return Some({ token_type: Bitwise, from: start, to: self.pos, })
     }
     _ => ()
   }
@@ -499,7 +499,7 @@ pub fn CppTokenizer::next_token(self : CppTokenizer) -> CppToken? {
     _ => Unknown
   }
   self.pos += 1
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

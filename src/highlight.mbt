@@ -117,8 +117,8 @@ pub fn HighlightTag::to_class(self : HighlightTag) -> String {
 /// A highlighted span of text
 #derive(Eq, Debug)
 pub(all) struct HighlightToken {
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
   tag : HighlightTag
 }
 
@@ -136,11 +136,11 @@ pub impl Show for HighlightToken with fn output(self, logger) {
 ///|
 /// Create a highlight token
 pub fn HighlightToken::new(
-  from : Int,
-  to : Int,
+  from : Int32,
+  to : Int32,
   tag : HighlightTag,
 ) -> HighlightToken {
-  { from, to, tag }
+  { from, to, tag, }
 }
 
 // =============================================================================
@@ -157,7 +157,7 @@ pub(all) struct Highlighter {
 ///|
 /// Create a new highlighter
 pub fn Highlighter::new() -> Highlighter {
-  { rules: {} }
+  { rules: {}, }
 }
 
 ///|
@@ -237,8 +237,8 @@ fn escape_html_to(s : String, buf : StringBuilder) -> Unit {
 /// Escape HTML from char slice directly to StringBuilder (zero-alloc)
 pub fn escape_html_slice_to(
   chars : Array[Char],
-  from : Int,
-  to : Int,
+  from : Int32,
+  to : Int32,
   buf : StringBuilder,
 ) -> Unit {
   for i = from; i < to; i = i + 1 {
@@ -263,7 +263,7 @@ pub(all) struct LineCache {
   /// Highlight tokens grouped by line
   lines : Array[Array[HighlightToken]]
   /// Start position of each line in source
-  mut line_starts : Array[Int]
+  mut line_starts : Array[Int32]
   /// Source text
   mut source : String
 }
@@ -274,15 +274,15 @@ pub fn LineCache::new(
   source : String,
   highlight_fn : (String) -> Array[HighlightToken],
 ) -> LineCache {
-  let cache : LineCache = { lines: [], line_starts: [], source }
+  let cache : LineCache = { lines: [], line_starts: [], source, }
   cache.build_full(highlight_fn)
   cache
 }
 
 ///|
 /// Build line starts array from source
-fn LineCache::compute_line_starts(source : String) -> Array[Int] {
-  let starts : Array[Int] = [0] // First line starts at 0
+fn LineCache::compute_line_starts(source : String) -> Array[Int32] {
+  let starts : Array[Int32] = [0] // First line starts at 0
   let chars = source.to_array()
   for i, c in chars {
     if c == '\n' && i + 1 < chars.length() {
@@ -294,7 +294,7 @@ fn LineCache::compute_line_starts(source : String) -> Array[Int] {
 
 ///|
 /// Find which line a position belongs to (binary search)
-fn LineCache::find_line(self : LineCache, pos : Int) -> Int {
+fn LineCache::find_line(self : LineCache, pos : Int32) -> Int32 {
   let starts = self.line_starts
   let mut low = 0
   let mut high = starts.length() - 1
@@ -348,7 +348,7 @@ pub fn LineCache::all_tokens(self : LineCache) -> Array[HighlightToken] {
 
 ///|
 /// Get number of lines
-pub fn LineCache::line_count(self : LineCache) -> Int {
+pub fn LineCache::line_count(self : LineCache) -> Int32 {
   self.lines.length()
 }
 
@@ -356,7 +356,7 @@ pub fn LineCache::line_count(self : LineCache) -> Int {
 /// Get tokens for a specific line
 pub fn LineCache::get_line_tokens(
   self : LineCache,
-  line : Int,
+  line : Int32,
 ) -> Array[HighlightToken] {
   if line >= 0 && line < self.lines.length() {
     self.lines[line]
@@ -378,9 +378,9 @@ pub fn LineCache::get_source(self : LineCache) -> String {
 pub fn LineCache::update(
   self : LineCache,
   new_source : String,
-  edit_line : Int,
+  edit_line : Int32,
   highlight_fn : (String) -> Array[HighlightToken],
-) -> (Int, Int) {
+) -> (Int32, Int32) {
   self.source = new_source
   let new_line_starts = LineCache::compute_line_starts(new_source)
   let new_num_lines = new_line_starts.length()

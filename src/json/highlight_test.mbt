@@ -106,3 +106,6 @@ test "highlight_json handles strings" {
   assert_eq(prop_count, 1) // "key"
   assert_eq(string_count, 1) // "value"
 }
+
+///|
+using @json {highlight_json, highlight_json_to_html}

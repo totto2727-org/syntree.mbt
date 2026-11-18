@@ -52,8 +52,8 @@ pub impl Show for TomlTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct TomlToken {
   token_type : TomlTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -71,8 +71,8 @@ pub impl Show for TomlToken with fn output(self, logger) {
 pub(all) struct TomlTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   priv mut at_line_start : Bool
   priv mut expect_value : Bool
 }
@@ -91,7 +91,7 @@ pub fn TomlTokenizer::new(input : String) -> TomlTokenizer {
 }
 
 ///|
-fn TomlTokenizer::peek_at(self : TomlTokenizer, offset : Int) -> Char? {
+fn TomlTokenizer::peek_at(self : TomlTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -147,7 +147,7 @@ fn TomlTokenizer::read_basic_string(self : TomlTokenizer) -> TomlToken {
     }
   }
   let token_type = if is_multiline { MultilineString } else { String }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -181,7 +181,7 @@ fn TomlTokenizer::read_literal_string(self : TomlTokenizer) -> TomlToken {
     }
   }
   let token_type = if is_multiline { MultilineString } else { String }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -221,7 +221,7 @@ fn TomlTokenizer::read_number_or_datetime(self : TomlTokenizer) -> TomlToken {
         break
       }
     }
-    return { token_type: DateTime, from: start, to: self.pos }
+    return { token_type: DateTime, from: start, to: self.pos, }
   }
 
   // Decimal part
@@ -249,7 +249,7 @@ fn TomlTokenizer::read_number_or_datetime(self : TomlTokenizer) -> TomlToken {
       self.pos += 1
     }
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -260,9 +260,9 @@ fn TomlTokenizer::read_bare_key(self : TomlTokenizer) -> TomlToken {
   }
   let value = String::from_array(self.chars[start:self.pos])
   if self.expect_value && (value == "true" || value == "false") {
-    return { token_type: Bool, from: start, to: self.pos }
+    return { token_type: Bool, from: start, to: self.pos, }
   }
-  { token_type: Key, from: start, to: self.pos }
+  { token_type: Key, from: start, to: self.pos, }
 }
 
 ///|
@@ -279,7 +279,7 @@ pub fn TomlTokenizer::next_token(self : TomlTokenizer) -> TomlToken? {
           (self.chars[self.pos] == ' ' || self.chars[self.pos] == '\t') {
       self.pos += 1
     }
-    return Some({ token_type: Whitespace, from: start, to: self.pos })
+    return Some({ token_type: Whitespace, from: start, to: self.pos, })
   }
 
   // Newline
@@ -287,7 +287,7 @@ pub fn TomlTokenizer::next_token(self : TomlTokenizer) -> TomlToken? {
     self.pos += 1
     self.at_line_start = true
     self.expect_value = false
-    return Some({ token_type: Newline, from: start, to: self.pos })
+    return Some({ token_type: Newline, from: start, to: self.pos, })
   }
 
   // Comment
@@ -295,7 +295,7 @@ pub fn TomlTokenizer::next_token(self : TomlTokenizer) -> TomlToken? {
     while self.pos < self.len && self.chars[self.pos] != '\n' {
       self.pos += 1
     }
-    return Some({ token_type: Comment, from: start, to: self.pos })
+    return Some({ token_type: Comment, from: start, to: self.pos, })
   }
 
   // Table header
@@ -315,7 +315,7 @@ pub fn TomlTokenizer::next_token(self : TomlTokenizer) -> TomlToken? {
         self.pos += 1
       }
       self.at_line_start = false
-      return Some({ token_type: ArrayTable, from: start, to: self.pos })
+      return Some({ token_type: ArrayTable, from: start, to: self.pos, })
     } else {
       while self.pos < self.len &&
             self.chars[self.pos] != ']' &&
@@ -326,7 +326,7 @@ pub fn TomlTokenizer::next_token(self : TomlTokenizer) -> TomlToken? {
         self.pos += 1
       }
       self.at_line_start = false
-      return Some({ token_type: TableHeader, from: start, to: self.pos })
+      return Some({ token_type: TableHeader, from: start, to: self.pos, })
     }
   }
 
@@ -377,7 +377,7 @@ pub fn TomlTokenizer::next_token(self : TomlTokenizer) -> TomlToken? {
   }
   self.pos += 1
   self.at_line_start = false
-  Some({ token_type, from: start, to: self.pos })
+  Some({ token_type, from: start, to: self.pos, })
 }
 
 ///|

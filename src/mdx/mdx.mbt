@@ -152,7 +152,7 @@ enum MdxContext {
   Frontmatter // Inside frontmatter ---
 
   // Block contexts
-  CodeBlock(Char, Int) // fence_char, fence_len - Inside fenced code
+  CodeBlock(Char, Int32) // fence_char, fence_len - Inside fenced code
 
   // JSX contexts
   JsxTagStart // Just after <
@@ -195,8 +195,8 @@ pub impl Show for MdxContext with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct MdxToken {
   token_type : MdxTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -219,8 +219,8 @@ pub impl Show for MdxToken with fn output(self, logger) {
 pub(all) struct MdxTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   priv context_stack : Array[MdxContext]
   priv mut line_start : Bool // Are we at the start of a line?
 }
@@ -275,7 +275,7 @@ fn MdxTokenizer::peek(self : MdxTokenizer) -> Char {
 
 ///|
 /// Peek character at offset from current position
-fn MdxTokenizer::peek_at(self : MdxTokenizer, offset : Int) -> Char {
+fn MdxTokenizer::peek_at(self : MdxTokenizer, offset : Int32) -> Char {
   let idx = self.pos + offset
   if idx < self.len && idx >= 0 {
     self.chars[idx]
@@ -327,7 +327,7 @@ fn MdxTokenizer::read_heading_marker(self : MdxTokenizer) -> MdxToken {
     self.pos += 1
     count += 1
   }
-  { token_type: HeadingMarker, from: start, to: self.pos }
+  { token_type: HeadingMarker, from: start, to: self.pos, }
 }
 
 ///|
@@ -335,7 +335,7 @@ fn MdxTokenizer::read_heading_marker(self : MdxTokenizer) -> MdxToken {
 fn MdxTokenizer::read_blockquote_marker(self : MdxTokenizer) -> MdxToken {
   let start = self.pos
   self.pos += 1 // Skip >
-  { token_type: BlockQuoteMarker, from: start, to: self.pos }
+  { token_type: BlockQuoteMarker, from: start, to: self.pos, }
 }
 
 ///|
@@ -357,7 +357,7 @@ fn MdxTokenizer::read_list_marker(self : MdxTokenizer) -> MdxToken {
       self.pos += 1
     }
   }
-  { token_type: ListMarker, from: start, to: self.pos }
+  { token_type: ListMarker, from: start, to: self.pos, }
 }
 
 ///|
@@ -369,7 +369,7 @@ fn MdxTokenizer::read_thematic_break(self : MdxTokenizer) -> MdxToken {
         (self.chars[self.pos] == c || is_whitespace(self.chars[self.pos])) {
     self.pos += 1
   }
-  { token_type: ThematicBreak, from: start, to: self.pos }
+  { token_type: ThematicBreak, from: start, to: self.pos, }
 }
 
 ///|
@@ -384,7 +384,7 @@ fn MdxTokenizer::read_code_fence(self : MdxTokenizer) -> MdxToken {
   }
   // Push code block context
   self.push_context(CodeBlock(fence_char, fence_len))
-  { token_type: CodeFence, from: start, to: self.pos }
+  { token_type: CodeFence, from: start, to: self.pos, }
 }
 
 ///|
@@ -394,7 +394,7 @@ fn MdxTokenizer::read_code_info(self : MdxTokenizer) -> MdxToken {
   while self.pos < self.len && !is_newline(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: CodeInfo, from: start, to: self.pos }
+  { token_type: CodeInfo, from: start, to: self.pos, }
 }
 
 ///|
@@ -402,7 +402,7 @@ fn MdxTokenizer::read_code_info(self : MdxTokenizer) -> MdxToken {
 fn MdxTokenizer::is_closing_fence(
   self : MdxTokenizer,
   fence_char : Char,
-  fence_len : Int,
+  fence_len : Int32,
 ) -> Bool {
   if self.pos >= self.len {
     return false
@@ -435,7 +435,7 @@ fn MdxTokenizer::read_code_content_line(self : MdxTokenizer) -> MdxToken {
   while self.pos < self.len && !is_newline(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: CodeContent, from: start, to: self.pos }
+  { token_type: CodeContent, from: start, to: self.pos, }
 }
 
 ///|
@@ -457,7 +457,7 @@ fn MdxTokenizer::read_inline_code(self : MdxTokenizer) -> MdxToken {
         close_count += 1
       }
       if close_count == backtick_count {
-        return { token_type: InlineCode, from: start, to: self.pos }
+        return { token_type: InlineCode, from: start, to: self.pos, }
       }
       // Not matching, continue
     } else if is_newline(self.chars[self.pos]) {
@@ -468,7 +468,7 @@ fn MdxTokenizer::read_inline_code(self : MdxTokenizer) -> MdxToken {
     }
   }
   // Unclosed, return as inline code anyway
-  { token_type: InlineCode, from: start, to: self.pos }
+  { token_type: InlineCode, from: start, to: self.pos, }
 }
 
 ///|
@@ -482,7 +482,7 @@ fn MdxTokenizer::read_emphasis_marker(self : MdxTokenizer) -> MdxToken {
     count += 1
   }
   let token_type = if count >= 2 { StrongMarker } else { EmphasisMarker }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -495,7 +495,7 @@ fn MdxTokenizer::read_link_or_image(self : MdxTokenizer) -> MdxToken {
   }
   // Expect [
   if self.pos >= self.len || self.chars[self.pos] != '[' {
-    return { token_type: Text, from: start, to: self.pos }
+    return { token_type: Text, from: start, to: self.pos, }
   }
   self.pos += 1
   // Read text until ]
@@ -549,7 +549,15 @@ fn MdxTokenizer::read_link_or_image(self : MdxTokenizer) -> MdxToken {
   if self.pos < self.len && self.chars[self.pos] == ')' {
     self.pos += 1
   }
-  { token_type: if is_image { Image } else { Link }, from: start, to: self.pos }
+  {
+    token_type: if is_image {
+      Image
+    } else {
+      Link
+    },
+    from: start,
+    to: self.pos,
+  }
 }
 
 ///|
@@ -565,7 +573,7 @@ fn MdxTokenizer::read_autolink(self : MdxTokenizer) -> MdxToken {
   if self.pos < self.len && self.chars[self.pos] == '>' {
     self.pos += 1
   }
-  { token_type: Autolink, from: start, to: self.pos }
+  { token_type: Autolink, from: start, to: self.pos, }
 }
 
 // =============================================================================
@@ -590,7 +598,7 @@ fn MdxTokenizer::read_js_identifier(self : MdxTokenizer) -> MdxToken {
     "function" => FunctionKeyword
     _ => JsIdentifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -611,7 +619,7 @@ fn MdxTokenizer::read_js_string(self : MdxTokenizer, quote : Char) -> MdxToken {
       self.pos += 1
     }
   }
-  { token_type: JsString, from: start, to: self.pos }
+  { token_type: JsString, from: start, to: self.pos, }
 }
 
 ///|
@@ -635,7 +643,7 @@ fn MdxTokenizer::read_js_comment(self : MdxTokenizer) -> MdxToken {
       self.pos += 1
     }
   }
-  { token_type: JsComment, from: start, to: self.pos }
+  { token_type: JsComment, from: start, to: self.pos, }
 }
 
 // =============================================================================
@@ -649,7 +657,7 @@ fn MdxTokenizer::read_jsx_tag_name(self : MdxTokenizer) -> MdxToken {
   while self.pos < self.len && is_jsx_name_part(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: JsxTagName, from: start, to: self.pos }
+  { token_type: JsxTagName, from: start, to: self.pos, }
 }
 
 ///|
@@ -659,7 +667,7 @@ fn MdxTokenizer::read_jsx_attribute(self : MdxTokenizer) -> MdxToken {
   while self.pos < self.len && is_jsx_name_part(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: JsxAttribute, from: start, to: self.pos }
+  { token_type: JsxAttribute, from: start, to: self.pos, }
 }
 
 ///|
@@ -673,7 +681,7 @@ fn MdxTokenizer::read_jsx_text(self : MdxTokenizer) -> MdxToken {
     }
     self.pos += 1
   }
-  { token_type: JsxText, from: start, to: self.pos }
+  { token_type: JsxText, from: start, to: self.pos, }
 }
 
 ///|
@@ -694,31 +702,31 @@ fn MdxTokenizer::next_jsx_element_token(self : MdxTokenizer) -> MdxToken? {
         // Self-closing />
         self.pos += 2
         self.pop_context()
-        Some({ token_type: JsxTagClose, from: start, to: self.pos })
+        Some({ token_type: JsxTagClose, from: start, to: self.pos, })
       } else {
         self.pos += 1
-        Some({ token_type: JsOperator, from: start, to: self.pos })
+        Some({ token_type: JsOperator, from: start, to: self.pos, })
       }
     '>' => {
       self.pos += 1
       self.pop_context()
       self.push_context(JsxChildren)
-      Some({ token_type: JsxTagClose, from: start, to: self.pos })
+      Some({ token_type: JsxTagClose, from: start, to: self.pos, })
     }
     '=' => {
       self.pos += 1
-      Some({ token_type: JsxEquals, from: start, to: self.pos })
+      Some({ token_type: JsxEquals, from: start, to: self.pos, })
     }
     '"' | '\'' => Some(self.read_js_string(c))
     '{' => {
       self.pos += 1
       self.push_context(JsxExpression)
-      Some({ token_type: JsxExprStart, from: start, to: self.pos })
+      Some({ token_type: JsxExprStart, from: start, to: self.pos, })
     }
     _ if is_ident_start(c) => Some(self.read_jsx_attribute())
     _ => {
       self.pos += 1
-      Some({ token_type: Error, from: start, to: self.pos })
+      Some({ token_type: Error, from: start, to: self.pos, })
     }
   }
 }
@@ -738,17 +746,17 @@ fn MdxTokenizer::next_jsx_children_token(self : MdxTokenizer) -> MdxToken? {
         self.pos += 2
         self.pop_context()
         self.push_context(JsxClosingTag)
-        Some({ token_type: JsxCloseTag, from: start, to: self.pos })
+        Some({ token_type: JsxCloseTag, from: start, to: self.pos, })
       } else {
         // Nested JSX
         self.pos += 1
         self.push_context(JsxTagStart)
-        Some({ token_type: JsxTagOpen, from: start, to: self.pos })
+        Some({ token_type: JsxTagOpen, from: start, to: self.pos, })
       }
     '{' => {
       self.pos += 1
       self.push_context(JsxExpression)
-      Some({ token_type: JsxExprStart, from: start, to: self.pos })
+      Some({ token_type: JsxExprStart, from: start, to: self.pos, })
     }
     _ => Some(self.read_jsx_text())
   }
@@ -829,7 +837,7 @@ fn MdxTokenizer::read_text(self : MdxTokenizer) -> MdxToken {
       self.pos += 1
     }
   }
-  { token_type: Text, from: start, to: self.pos }
+  { token_type: Text, from: start, to: self.pos, }
 }
 
 ///|
@@ -844,7 +852,7 @@ fn MdxTokenizer::read_newline(self : MdxTokenizer) -> MdxToken {
     self.pos += 1
   }
   self.line_start = true
-  { token_type: Newline, from: start, to: self.pos }
+  { token_type: Newline, from: start, to: self.pos, }
 }
 
 ///|
@@ -866,7 +874,11 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
         }
         self.pop_context()
         self.line_start = false
-        return Some({ token_type: FrontmatterMarker, from: start, to: self.pos })
+        return Some({
+          token_type: FrontmatterMarker,
+          from: start,
+          to: self.pos,
+        })
       }
       // Read frontmatter content line
       let start = self.pos
@@ -899,7 +911,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
           self.pos += 1
         }
         self.line_start = false
-        return Some({ token_type: CodeFence, from: start, to: self.pos })
+        return Some({ token_type: CodeFence, from: start, to: self.pos, })
       }
       // Handle newlines
       if is_newline(self.peek()) {
@@ -944,7 +956,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
         let start = self.pos
         self.pos += 1
         self.pop_context()
-        return Some({ token_type: JsxTagClose, from: start, to: self.pos })
+        return Some({ token_type: JsxTagClose, from: start, to: self.pos, })
       }
       self.pop_context()
       ()
@@ -962,7 +974,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
         let start = self.pos
         self.pos += 1
         self.pop_context()
-        return Some({ token_type: JsxExprEnd, from: start, to: self.pos })
+        return Some({ token_type: JsxExprEnd, from: start, to: self.pos, })
       }
       // Parse JavaScript expression tokens
       if is_ident_start(c) {
@@ -975,12 +987,12 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
         let start = self.pos
         self.pos += 1
         self.push_context(JsxExpression) // Nested expression
-        return Some({ token_type: JsBrace, from: start, to: self.pos })
+        return Some({ token_type: JsBrace, from: start, to: self.pos, })
       }
       // Other operators
       let start = self.pos
       self.pos += 1
-      return Some({ token_type: JsOperator, from: start, to: self.pos })
+      return Some({ token_type: JsOperator, from: start, to: self.pos, })
     }
     JsStatement => {
       // Skip whitespace
@@ -1005,7 +1017,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
       if c == '{' || c == '}' {
         let start = self.pos
         self.pos += 1
-        return Some({ token_type: JsBrace, from: start, to: self.pos })
+        return Some({ token_type: JsBrace, from: start, to: self.pos, })
       }
       if c == '/' &&
         self.pos + 1 < self.len &&
@@ -1015,7 +1027,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
       // Other punctuation
       let start = self.pos
       self.pos += 1
-      return Some({ token_type: JsOperator, from: start, to: self.pos })
+      return Some({ token_type: JsOperator, from: start, to: self.pos, })
     }
     Normal => ()
   }
@@ -1039,7 +1051,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
       }
       self.push_context(Frontmatter)
       self.line_start = false
-      return Some({ token_type: FrontmatterMarker, from: start, to: self.pos })
+      return Some({ token_type: FrontmatterMarker, from: start, to: self.pos, })
     }
 
     // Check for import/export
@@ -1055,7 +1067,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
       self.pos += 1
       self.push_context(JsxTagStart)
       self.line_start = false
-      return Some({ token_type: JsxTagOpen, from: start, to: self.pos })
+      return Some({ token_type: JsxTagOpen, from: start, to: self.pos, })
     }
 
     // Skip leading whitespace
@@ -1064,7 +1076,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
       while self.pos < self.len && is_whitespace(self.chars[self.pos]) {
         self.pos += 1
       }
-      return Some({ token_type: Whitespace, from: start, to: self.pos })
+      return Some({ token_type: Whitespace, from: start, to: self.pos, })
     }
 
     // Heading
@@ -1172,7 +1184,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
       let start = self.pos
       self.pos += 1
       self.push_context(JsxTagStart)
-      return Some({ token_type: JsxTagOpen, from: start, to: self.pos })
+      return Some({ token_type: JsxTagOpen, from: start, to: self.pos, })
     }
     // Autolink or HTML
     return Some(self.read_autolink())
@@ -1182,7 +1194,7 @@ pub fn MdxTokenizer::next_token(self : MdxTokenizer) -> MdxToken? {
     let start = self.pos
     self.pos += 1
     self.push_context(JsxExpression)
-    return Some({ token_type: JsxExprStart, from: start, to: self.pos })
+    return Some({ token_type: JsxExprStart, from: start, to: self.pos, })
   }
 
   // Plain text

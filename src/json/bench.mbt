@@ -16,7 +16,7 @@ fn generate_simple_json() -> String {
 
 ///|
 /// Generate a nested JSON object
-fn generate_nested_json(depth : Int) -> String {
+fn generate_nested_json(depth : Int32) -> String {
   let buf = StringBuilder()
   for _i = 0; _i < depth; _i = _i + 1 {
     buf.write_string("{\"nested\": ")
@@ -30,7 +30,7 @@ fn generate_nested_json(depth : Int) -> String {
 
 ///|
 /// Generate a JSON array with numbers
-fn generate_json_array(size : Int) -> String {
+fn generate_json_array(size : Int32) -> String {
   let buf = StringBuilder()
   buf.write_string("[")
   for i = 0; i < size; i = i + 1 {
@@ -45,7 +45,7 @@ fn generate_json_array(size : Int) -> String {
 
 ///|
 /// Generate a JSON object with many properties
-fn generate_json_object(props : Int) -> String {
+fn generate_json_object(props : Int32) -> String {
   let buf = StringBuilder()
   buf.write_string("{")
   for i = 0; i < props; i = i + 1 {
@@ -63,7 +63,7 @@ fn generate_json_object(props : Int) -> String {
 
 ///|
 /// Generate a complex JSON document
-fn generate_complex_json(size : Int) -> String {
+fn generate_complex_json(size : Int32) -> String {
   let buf = StringBuilder()
   buf.write_string("{\"items\": [")
   for i = 0; i < size; i = i + 1 {
@@ -339,7 +339,7 @@ test "tree: cursor traversal 50 items" (b : @bench.T) {
   b.bench(fn() {
     let cursor = @syntree.TreeCursor::new(tree)
     let mut count = 0
-    fn traverse(c : @syntree.TreeCursor) -> Int {
+    fn traverse(c : @syntree.TreeCursor) -> Int32 {
       let mut n = 1
       if c.first_child() {
         n += traverse(c)

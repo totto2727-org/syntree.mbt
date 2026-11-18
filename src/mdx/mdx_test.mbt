@@ -618,3 +618,11 @@ test "highlight preserves positions" {
     assert_true(token.from < token.to)
   }
 }
+
+///|
+using @mdx {
+  type MdxTokenizer,
+  type MdxTokenType,
+  highlight_mdx,
+  highlight_mdx_to_html,
+}

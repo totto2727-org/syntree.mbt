@@ -495,3 +495,6 @@ test "parse_json handles trailing content gracefully" {
   // Should have parsed at least the first number
   assert_eq(doc.node_type().unwrap().name, "JsonDocument")
 }
+
+///|
+using @json {type JsonTokenizer, parse_json}

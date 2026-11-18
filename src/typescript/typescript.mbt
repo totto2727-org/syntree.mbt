@@ -223,8 +223,8 @@ fn is_builtin_type(word : String) -> Bool {
 #derive(Eq, Debug)
 pub(all) struct TsToken {
   token_type : TsTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -273,8 +273,8 @@ pub impl Show for TsContext with fn output(self, logger) {
 pub(all) struct TsTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
   priv context_stack : Array[TsContext]
   priv mut last_token : TsTokenType?
 }
@@ -378,7 +378,7 @@ fn TsTokenizer::read_string(self : TsTokenizer, quote : Char) -> TsToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -391,7 +391,7 @@ fn TsTokenizer::read_template_literal(self : TsTokenizer) -> TsToken {
     if c == '`' {
       // End of template - no interpolation
       self.pos += 1
-      return { token_type: TemplateString, from: start, to: self.pos }
+      return { token_type: TemplateString, from: start, to: self.pos, }
     } else if c == '\\' && self.pos + 1 < self.len {
       // Escape sequence
       self.pos += 2
@@ -401,13 +401,13 @@ fn TsTokenizer::read_template_literal(self : TsTokenizer) -> TsToken {
       // Start of interpolation - return TemplateHead
       self.pos += 2 // Include ${
       self.push_context(TemplateExpr)
-      return { token_type: TemplateHead, from: start, to: self.pos }
+      return { token_type: TemplateHead, from: start, to: self.pos, }
     } else {
       self.pos += 1
     }
   }
   // Unterminated template
-  { token_type: TemplateString, from: start, to: self.pos }
+  { token_type: TemplateString, from: start, to: self.pos, }
 }
 
 ///|
@@ -421,7 +421,7 @@ fn TsTokenizer::read_template_continuation(self : TsTokenizer) -> TsToken {
     if c == '`' {
       // End of template
       self.pos += 1
-      return { token_type: TemplateTail, from: start, to: self.pos }
+      return { token_type: TemplateTail, from: start, to: self.pos, }
     } else if c == '\\' && self.pos + 1 < self.len {
       self.pos += 2
     } else if c == '$' &&
@@ -430,12 +430,12 @@ fn TsTokenizer::read_template_continuation(self : TsTokenizer) -> TsToken {
       // Another interpolation
       self.pos += 2
       self.push_context(TemplateExpr)
-      return { token_type: TemplateMiddle, from: start, to: self.pos }
+      return { token_type: TemplateMiddle, from: start, to: self.pos, }
     } else {
       self.pos += 1
     }
   }
-  { token_type: TemplateTail, from: start, to: self.pos }
+  { token_type: TemplateTail, from: start, to: self.pos, }
 }
 
 ///|
@@ -453,7 +453,7 @@ fn TsTokenizer::read_decorator(self : TsTokenizer) -> TsToken {
       break
     }
   }
-  { token_type: Decorator, from: start, to: self.pos }
+  { token_type: Decorator, from: start, to: self.pos, }
 }
 
 ///|
@@ -466,7 +466,7 @@ fn TsTokenizer::read_private_field(self : TsTokenizer) -> TsToken {
   while self.pos < self.len && is_ident_part(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: PrivateId, from: start, to: self.pos }
+  { token_type: PrivateId, from: start, to: self.pos, }
 }
 
 ///|
@@ -493,7 +493,7 @@ fn TsTokenizer::read_number(self : TsTokenizer) -> TsToken {
             break
           }
         }
-        return { token_type: Number, from: start, to: self.pos }
+        return { token_type: Number, from: start, to: self.pos, }
       } else if next == 'b' || next == 'B' {
         // Binary
         self.pos += 2
@@ -505,7 +505,7 @@ fn TsTokenizer::read_number(self : TsTokenizer) -> TsToken {
             break
           }
         }
-        return { token_type: Number, from: start, to: self.pos }
+        return { token_type: Number, from: start, to: self.pos, }
       } else if next == 'o' || next == 'O' {
         // Octal
         self.pos += 2
@@ -517,7 +517,7 @@ fn TsTokenizer::read_number(self : TsTokenizer) -> TsToken {
             break
           }
         }
-        return { token_type: Number, from: start, to: self.pos }
+        return { token_type: Number, from: start, to: self.pos, }
       }
     }
   }
@@ -556,7 +556,7 @@ fn TsTokenizer::read_number(self : TsTokenizer) -> TsToken {
   if self.pos < self.len && self.chars[self.pos] == 'n' {
     self.pos += 1
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -576,7 +576,7 @@ fn TsTokenizer::read_identifier(self : TsTokenizer) -> TsToken {
     _ if is_builtin_type(word) => TypeName
     _ => Identifier
   }
-  { token_type, from: start, to: self.pos }
+  { token_type, from: start, to: self.pos, }
 }
 
 ///|
@@ -587,7 +587,7 @@ fn TsTokenizer::read_line_comment(self : TsTokenizer) -> TsToken {
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: LineComment, from: start, to: self.pos }
+  { token_type: LineComment, from: start, to: self.pos, }
 }
 
 ///|
@@ -602,7 +602,7 @@ fn TsTokenizer::read_block_comment(self : TsTokenizer) -> TsToken {
     }
     self.pos += 1
   }
-  { token_type: BlockComment, from: start, to: self.pos }
+  { token_type: BlockComment, from: start, to: self.pos, }
 }
 
 ///|
@@ -674,7 +674,7 @@ fn TsTokenizer::read_regex(self : TsTokenizer) -> TsToken {
       break
     }
   }
-  { token_type: Regex, from: start, to: self.pos }
+  { token_type: Regex, from: start, to: self.pos, }
 }
 
 ///|
@@ -695,7 +695,7 @@ fn TsTokenizer::read_operator(self : TsTokenizer) -> TsToken {
       (c == '&' && c2 == '&' && c3 == '=') ||
       (c == '|' && c2 == '|' && c3 == '=') {
       self.pos += 3
-      return { token_type: Operator, from: start, to: self.pos }
+      return { token_type: Operator, from: start, to: self.pos, }
     }
   }
   if self.pos + 1 < self.len {
@@ -723,11 +723,11 @@ fn TsTokenizer::read_operator(self : TsTokenizer) -> TsToken {
       (c == '|' && c2 == '=') ||
       (c == '^' && c2 == '=') {
       self.pos += 2
-      return { token_type: Operator, from: start, to: self.pos }
+      return { token_type: Operator, from: start, to: self.pos, }
     }
   }
   self.pos += 1
-  { token_type: Operator, from: start, to: self.pos }
+  { token_type: Operator, from: start, to: self.pos, }
 }
 
 ///|
@@ -757,7 +757,7 @@ fn TsTokenizer::read_jsx_tag_name(self : TsTokenizer) -> TsToken {
   while self.pos < self.len && is_jsx_name_part(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: JsxTagName, from: start, to: self.pos }
+  { token_type: JsxTagName, from: start, to: self.pos, }
 }
 
 ///|
@@ -767,7 +767,7 @@ fn TsTokenizer::read_jsx_attribute(self : TsTokenizer) -> TsToken {
   while self.pos < self.len && is_jsx_name_part(self.chars[self.pos]) {
     self.pos += 1
   }
-  { token_type: JsxAttribute, from: start, to: self.pos }
+  { token_type: JsxAttribute, from: start, to: self.pos, }
 }
 
 ///|
@@ -781,7 +781,7 @@ fn TsTokenizer::read_jsx_text(self : TsTokenizer) -> TsToken {
     }
     self.pos += 1
   }
-  { token_type: JsxText, from: start, to: self.pos }
+  { token_type: JsxText, from: start, to: self.pos, }
 }
 
 ///|
@@ -799,32 +799,32 @@ fn TsTokenizer::next_jsx_element_token(self : TsTokenizer) -> TsToken? {
         // Self-closing />
         self.pos += 2
         self.pop_context() // Exit JsxElement
-        Some({ token_type: JsxTagClose, from: start, to: self.pos })
+        Some({ token_type: JsxTagClose, from: start, to: self.pos, })
       } else {
         self.pos += 1
-        Some({ token_type: Operator, from: start, to: self.pos })
+        Some({ token_type: Operator, from: start, to: self.pos, })
       }
     '>' => {
       // End of opening tag, switch to JsxChildren
       self.pos += 1
       self.pop_context()
       self.push_context(JsxChildren)
-      Some({ token_type: JsxTagClose, from: start, to: self.pos })
+      Some({ token_type: JsxTagClose, from: start, to: self.pos, })
     }
     '=' => {
       self.pos += 1
-      Some({ token_type: JsxEquals, from: start, to: self.pos })
+      Some({ token_type: JsxEquals, from: start, to: self.pos, })
     }
     '"' | '\'' => Some(self.read_string(c))
     '{' => {
       self.pos += 1
       self.push_context(JsxExpression)
-      Some({ token_type: JsxExprStart, from: start, to: self.pos })
+      Some({ token_type: JsxExprStart, from: start, to: self.pos, })
     }
     _ if is_ident_start(c) => Some(self.read_jsx_attribute())
     _ => {
       self.pos += 1
-      Some({ token_type: Error, from: start, to: self.pos })
+      Some({ token_type: Error, from: start, to: self.pos, })
     }
   }
 }
@@ -844,17 +844,17 @@ fn TsTokenizer::next_jsx_children_token(self : TsTokenizer) -> TsToken? {
         self.pos += 2
         self.pop_context() // Exit JsxChildren
         self.push_context(JsxClosingTag)
-        Some({ token_type: JsxCloseTag, from: start, to: self.pos })
+        Some({ token_type: JsxCloseTag, from: start, to: self.pos, })
       } else {
         // Nested JSX element
         self.pos += 1
         self.push_context(JsxTagStart)
-        Some({ token_type: JsxTagOpen, from: start, to: self.pos })
+        Some({ token_type: JsxTagOpen, from: start, to: self.pos, })
       }
     '{' => {
       self.pos += 1
       self.push_context(JsxExpression)
-      Some({ token_type: JsxExprStart, from: start, to: self.pos })
+      Some({ token_type: JsxExprStart, from: start, to: self.pos, })
     }
     _ =>
       // Read text content
@@ -916,7 +916,7 @@ pub fn TsTokenizer::next_token(self : TsTokenizer) -> TsToken? {
         self.pos += 1
         self.pop_context()
         self.last_token = Some(JsxTagClose)
-        return Some({ token_type: JsxTagClose, from: start, to: self.pos })
+        return Some({ token_type: JsxTagClose, from: start, to: self.pos, })
       }
       // Invalid, pop and continue
       self.pop_context()
@@ -933,7 +933,7 @@ pub fn TsTokenizer::next_token(self : TsTokenizer) -> TsToken? {
         self.pos += 1
         self.pop_context()
         self.last_token = Some(JsxExprEnd)
-        return Some({ token_type: JsxExprEnd, from: start, to: self.pos })
+        return Some({ token_type: JsxExprEnd, from: start, to: self.pos, })
       }
       // Otherwise, parse normal token
       ()
@@ -995,7 +995,7 @@ pub fn TsTokenizer::next_token(self : TsTokenizer) -> TsToken? {
       self.pos += 2
       self.push_context(JsxClosingTag)
       self.last_token = Some(JsxCloseTag)
-      return Some({ token_type: JsxCloseTag, from: start, to: self.pos })
+      return Some({ token_type: JsxCloseTag, from: start, to: self.pos, })
     }
 
     // Check if this looks like JSX (< followed by identifier or >)
@@ -1006,7 +1006,7 @@ pub fn TsTokenizer::next_token(self : TsTokenizer) -> TsToken? {
         self.pos += 1
         self.push_context(JsxTagStart)
         self.last_token = Some(JsxTagOpen)
-        return Some({ token_type: JsxTagOpen, from: start, to: self.pos })
+        return Some({ token_type: JsxTagOpen, from: start, to: self.pos, })
       }
     }
     // Fall through to operator handling
@@ -1030,45 +1030,45 @@ pub fn TsTokenizer::next_token(self : TsTokenizer) -> TsToken? {
     '`' => self.read_template_literal()
     '{' => {
       self.pos += 1
-      { token_type: BraceOpen, from: start, to: self.pos }
+      { token_type: BraceOpen, from: start, to: self.pos, }
     }
     '}' => {
       self.pos += 1
       // Check if we're exiting a JSX expression
       if self.context() == JsxExpression {
         self.pop_context()
-        { token_type: JsxExprEnd, from: start, to: self.pos }
+        { token_type: JsxExprEnd, from: start, to: self.pos, }
       } else {
-        { token_type: BraceClose, from: start, to: self.pos }
+        { token_type: BraceClose, from: start, to: self.pos, }
       }
     }
     '[' => {
       self.pos += 1
-      { token_type: BracketOpen, from: start, to: self.pos }
+      { token_type: BracketOpen, from: start, to: self.pos, }
     }
     ']' => {
       self.pos += 1
-      { token_type: BracketClose, from: start, to: self.pos }
+      { token_type: BracketClose, from: start, to: self.pos, }
     }
     '(' => {
       self.pos += 1
-      { token_type: ParenOpen, from: start, to: self.pos }
+      { token_type: ParenOpen, from: start, to: self.pos, }
     }
     ')' => {
       self.pos += 1
-      { token_type: ParenClose, from: start, to: self.pos }
+      { token_type: ParenClose, from: start, to: self.pos, }
     }
     ';' => {
       self.pos += 1
-      { token_type: Semicolon, from: start, to: self.pos }
+      { token_type: Semicolon, from: start, to: self.pos, }
     }
     ',' => {
       self.pos += 1
-      { token_type: Comma, from: start, to: self.pos }
+      { token_type: Comma, from: start, to: self.pos, }
     }
     ':' => {
       self.pos += 1
-      { token_type: Colon, from: start, to: self.pos }
+      { token_type: Colon, from: start, to: self.pos, }
     }
     '.' =>
       // Check for spread operator ...
@@ -1076,12 +1076,12 @@ pub fn TsTokenizer::next_token(self : TsTokenizer) -> TsToken? {
         self.chars[self.pos + 1] == '.' &&
         self.chars[self.pos + 2] == '.' {
         self.pos += 3
-        { token_type: Spread, from: start, to: self.pos }
+        { token_type: Spread, from: start, to: self.pos, }
       } else if self.pos + 1 < self.len && is_digit(self.chars[self.pos + 1]) {
         self.read_number()
       } else {
         self.pos += 1
-        { token_type: Dot, from: start, to: self.pos }
+        { token_type: Dot, from: start, to: self.pos, }
       }
     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
       self.read_number()
@@ -1102,7 +1102,7 @@ pub fn TsTokenizer::next_token(self : TsTokenizer) -> TsToken? {
     | '?' => self.read_operator()
     _ => {
       self.pos += 1
-      { token_type: Error, from: start, to: self.pos }
+      { token_type: Error, from: start, to: self.pos, }
     }
   }
   self.last_token = Some(token.token_type)
@@ -1131,7 +1131,7 @@ pub fn TsTokenizer::tokenize_all(self : TsTokenizer) -> Array[TsToken] {
 /// Can be saved and restored to resume tokenization from a checkpoint
 #derive(Eq, Debug)
 pub(all) struct TokenizerState {
-  pos : Int
+  pos : Int32
   context_stack : Array[TsContext]
   last_token : TsTokenType?
 }
@@ -1169,7 +1169,7 @@ pub fn TsTokenizer::save_state(self : TsTokenizer) -> TokenizerState {
 
 ///|
 /// Get current position
-pub fn TsTokenizer::position(self : TsTokenizer) -> Int {
+pub fn TsTokenizer::position(self : TsTokenizer) -> Int32 {
   self.pos
 }
 
@@ -1205,7 +1205,7 @@ pub(all) struct TokenCache {
 ///|
 /// Create a new token cache from source
 pub fn TokenCache::new(source : String) -> TokenCache {
-  let cache : TokenCache = { lines: [], line_states: [], source }
+  let cache : TokenCache = { lines: [], line_states: [], source, }
   cache.tokenize_full()
   cache
 }
@@ -1277,11 +1277,11 @@ fn TokenCache::tokenize_full(self : TokenCache) -> Unit {
 /// Collect newline positions between two positions
 fn TokenCache::collect_newlines_between(
   self : TokenCache,
-  from : Int,
-  to : Int,
-) -> Array[Int] {
+  from : Int32,
+  to : Int32,
+) -> Array[Int32] {
   let chars = self.source.to_array()
-  let positions : Array[Int] = []
+  let positions : Array[Int32] = []
   let start = if from < 0 { 0 } else { from }
   let end = if to < chars.length() { to } else { chars.length() }
   for i = start; i < end; i = i + 1 {
@@ -1306,7 +1306,7 @@ pub fn TokenCache::all_tokens(self : TokenCache) -> Array[TsToken] {
 
 ///|
 /// Get number of lines
-pub fn TokenCache::line_count(self : TokenCache) -> Int {
+pub fn TokenCache::line_count(self : TokenCache) -> Int32 {
   self.lines.length()
 }
 
@@ -1314,7 +1314,7 @@ pub fn TokenCache::line_count(self : TokenCache) -> Int {
 /// Get tokens for a specific line
 pub fn TokenCache::get_line_tokens(
   self : TokenCache,
-  line : Int,
+  line : Int32,
 ) -> Array[TsToken] {
   if line >= 0 && line < self.lines.length() {
     self.lines[line]
@@ -1329,8 +1329,8 @@ pub fn TokenCache::get_line_tokens(
 pub fn TokenCache::update(
   self : TokenCache,
   new_source : String,
-  edit_line : Int,
-) -> (Int, Int) {
+  edit_line : Int32,
+) -> (Int32, Int32) {
   self.source = new_source
 
   // Find the line to start re-tokenizing from
@@ -1340,7 +1340,7 @@ pub fn TokenCache::update(
   let start_state = if start_line < self.line_states.length() {
     self.line_states[start_line]
   } else {
-    { pos: 0, context_stack: [Normal], last_token: None }
+    { pos: 0, context_stack: [Normal], last_token: None, }
   }
 
   // Re-tokenize from this point

@@ -96,8 +96,8 @@ pub impl Show for GoTokenType with fn output(self, logger) {
 #derive(Eq, Debug)
 pub(all) struct GoToken {
   token_type : GoTokenType
-  from : Int
-  to : Int
+  from : Int32
+  to : Int32
 }
 
 ///|
@@ -157,15 +157,15 @@ fn is_decl_keyword(word : String) -> Bool {
 pub(all) struct GoTokenizer {
   input : String
   priv chars : Array[Char]
-  priv len : Int
-  priv mut pos : Int
+  priv len : Int32
+  priv mut pos : Int32
 }
 
 ///|
 /// Create a new Go tokenizer
 pub fn GoTokenizer::new(input : String) -> GoTokenizer {
   let chars = input.to_array()
-  { input, chars, len: chars.length(), pos: 0 }
+  { input, chars, len: chars.length(), pos: 0, }
 }
 
 ///|
@@ -176,7 +176,7 @@ pub fn GoTokenizer::at_end(self : GoTokenizer) -> Bool {
 
 ///|
 /// Peek character at offset
-fn GoTokenizer::peek_at(self : GoTokenizer, offset : Int) -> Char? {
+fn GoTokenizer::peek_at(self : GoTokenizer, offset : Int32) -> Char? {
   let idx = self.pos + offset
   if idx >= 0 && idx < self.len {
     Some(self.chars[idx])
@@ -231,7 +231,7 @@ fn GoTokenizer::read_line_comment(self : GoTokenizer) -> GoToken {
   while self.pos < self.len && self.chars[self.pos] != '\n' {
     self.pos += 1
   }
-  { token_type: LineComment, from: start, to: self.pos }
+  { token_type: LineComment, from: start, to: self.pos, }
 }
 
 ///|
@@ -246,7 +246,7 @@ fn GoTokenizer::read_block_comment(self : GoTokenizer) -> GoToken {
     }
     self.pos += 1
   }
-  { token_type: BlockComment, from: start, to: self.pos }
+  { token_type: BlockComment, from: start, to: self.pos, }
 }
 
 ///|
@@ -267,7 +267,7 @@ fn GoTokenizer::read_string(self : GoTokenizer) -> GoToken {
       self.pos += 1
     }
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -282,7 +282,7 @@ fn GoTokenizer::read_raw_string(self : GoTokenizer) -> GoToken {
     }
     self.pos += 1
   }
-  { token_type: String, from: start, to: self.pos }
+  { token_type: String, from: start, to: self.pos, }
 }
 
 ///|
@@ -303,7 +303,7 @@ fn GoTokenizer::read_rune(self : GoTokenizer) -> GoToken {
       self.pos += 1
     }
   }
-  { token_type: Rune, from: start, to: self.pos }
+  { token_type: Rune, from: start, to: self.pos, }
 }
 
 ///|
@@ -320,7 +320,7 @@ fn GoTokenizer::read_number(self : GoTokenizer) -> GoToken {
             (is_hex_digit(self.chars[self.pos]) || self.chars[self.pos] == '_') {
         self.pos += 1
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
     if next == 'b' || next == 'B' {
       self.pos += 2
@@ -332,7 +332,7 @@ fn GoTokenizer::read_number(self : GoTokenizer) -> GoToken {
             ) {
         self.pos += 1
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
     if next == 'o' || next == 'O' {
       self.pos += 2
@@ -344,7 +344,7 @@ fn GoTokenizer::read_number(self : GoTokenizer) -> GoToken {
           break
         }
       }
-      return { token_type: Number, from: start, to: self.pos }
+      return { token_type: Number, from: start, to: self.pos, }
     }
   }
 
@@ -383,7 +383,7 @@ fn GoTokenizer::read_number(self : GoTokenizer) -> GoToken {
   if self.pos < self.len && self.chars[self.pos] == 'i' {
     self.pos += 1
   }
-  { token_type: Number, from: start, to: self.pos }
+  { token_type: Number, from: start, to: self.pos, }
 }
 
 ///|
@@ -395,21 +395,21 @@ fn GoTokenizer::read_identifier(self : GoTokenizer) -> GoToken {
   }
   let word = String::from_array(self.chars[start:self.pos])
   if is_keyword(word) {
-    { token_type: Keyword, from: start, to: self.pos }
+    { token_type: Keyword, from: start, to: self.pos, }
   } else if is_type_keyword(word) {
-    { token_type: TypeKeyword, from: start, to: self.pos }
+    { token_type: TypeKeyword, from: start, to: self.pos, }
   } else if is_decl_keyword(word) {
-    { token_type: DeclKeyword, from: start, to: self.pos }
+    { token_type: DeclKeyword, from: start, to: self.pos, }
   } else {
     // Heuristic: exported types/functions start with uppercase
     let chars_arr = word.to_array()
     if chars_arr.length() > 0 {
       let first = chars_arr[0]
       if first >= 'A' && first <= 'Z' {
-        return { token_type: TypeName, from: start, to: self.pos }
+        return { token_type: TypeName, from: start, to: self.pos, }
       }
     }
-    { token_type: Identifier, from: start, to: self.pos }
+    { token_type: Identifier, from: start, to: self.pos, }
   }
 }
 
@@ -474,18 +474,18 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
           let next = self.chars[self.pos]
           if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Assignment, from: start, to: self.pos })
+            tokens.push({ token_type: Assignment, from: start, to: self.pos, })
           } else if c == '+' && next == '+' {
             self.pos += 1
-            tokens.push({ token_type: Operator, from: start, to: self.pos })
+            tokens.push({ token_type: Operator, from: start, to: self.pos, })
           } else if c == '-' && next == '-' {
             self.pos += 1
-            tokens.push({ token_type: Operator, from: start, to: self.pos })
+            tokens.push({ token_type: Operator, from: start, to: self.pos, })
           } else {
-            tokens.push({ token_type: Operator, from: start, to: self.pos })
+            tokens.push({ token_type: Operator, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Operator, from: start, to: self.pos })
+          tokens.push({ token_type: Operator, from: start, to: self.pos, })
         }
       }
       '=' => {
@@ -493,9 +493,9 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
         self.pos += 1
         if self.pos < self.len && self.chars[self.pos] == '=' {
           self.pos += 1
-          tokens.push({ token_type: Comparison, from: start, to: self.pos })
+          tokens.push({ token_type: Comparison, from: start, to: self.pos, })
         } else {
-          tokens.push({ token_type: Assignment, from: start, to: self.pos })
+          tokens.push({ token_type: Assignment, from: start, to: self.pos, })
         }
       }
       ':' => {
@@ -503,9 +503,9 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
         self.pos += 1
         if self.pos < self.len && self.chars[self.pos] == '=' {
           self.pos += 1
-          tokens.push({ token_type: Assignment, from: start, to: self.pos })
+          tokens.push({ token_type: Assignment, from: start, to: self.pos, })
         } else {
-          tokens.push({ token_type: Colon, from: start, to: self.pos })
+          tokens.push({ token_type: Colon, from: start, to: self.pos, })
         }
       }
       '!' => {
@@ -513,9 +513,9 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
         self.pos += 1
         if self.pos < self.len && self.chars[self.pos] == '=' {
           self.pos += 1
-          tokens.push({ token_type: Comparison, from: start, to: self.pos })
+          tokens.push({ token_type: Comparison, from: start, to: self.pos, })
         } else {
-          tokens.push({ token_type: Logical, from: start, to: self.pos })
+          tokens.push({ token_type: Logical, from: start, to: self.pos, })
         }
       }
       '<' => {
@@ -525,23 +525,23 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
           let next = self.chars[self.pos]
           if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Comparison, from: start, to: self.pos })
+            tokens.push({ token_type: Comparison, from: start, to: self.pos, })
           } else if next == '<' {
             self.pos += 1
             if self.pos < self.len && self.chars[self.pos] == '=' {
               self.pos += 1
-              tokens.push({ token_type: Assignment, from: start, to: self.pos })
+              tokens.push({ token_type: Assignment, from: start, to: self.pos, })
             } else {
-              tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+              tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
             }
           } else if next == '-' {
             self.pos += 1
-            tokens.push({ token_type: Arrow, from: start, to: self.pos })
+            tokens.push({ token_type: Arrow, from: start, to: self.pos, })
           } else {
-            tokens.push({ token_type: Comparison, from: start, to: self.pos })
+            tokens.push({ token_type: Comparison, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Comparison, from: start, to: self.pos })
+          tokens.push({ token_type: Comparison, from: start, to: self.pos, })
         }
       }
       '>' => {
@@ -551,20 +551,20 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
           let next = self.chars[self.pos]
           if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Comparison, from: start, to: self.pos })
+            tokens.push({ token_type: Comparison, from: start, to: self.pos, })
           } else if next == '>' {
             self.pos += 1
             if self.pos < self.len && self.chars[self.pos] == '=' {
               self.pos += 1
-              tokens.push({ token_type: Assignment, from: start, to: self.pos })
+              tokens.push({ token_type: Assignment, from: start, to: self.pos, })
             } else {
-              tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+              tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
             }
           } else {
-            tokens.push({ token_type: Comparison, from: start, to: self.pos })
+            tokens.push({ token_type: Comparison, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Comparison, from: start, to: self.pos })
+          tokens.push({ token_type: Comparison, from: start, to: self.pos, })
         }
       }
       '&' => {
@@ -574,23 +574,23 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
           let next = self.chars[self.pos]
           if next == '&' {
             self.pos += 1
-            tokens.push({ token_type: Logical, from: start, to: self.pos })
+            tokens.push({ token_type: Logical, from: start, to: self.pos, })
           } else if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Assignment, from: start, to: self.pos })
+            tokens.push({ token_type: Assignment, from: start, to: self.pos, })
           } else if next == '^' {
             self.pos += 1
             if self.pos < self.len && self.chars[self.pos] == '=' {
               self.pos += 1
-              tokens.push({ token_type: Assignment, from: start, to: self.pos })
+              tokens.push({ token_type: Assignment, from: start, to: self.pos, })
             } else {
-              tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+              tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
             }
           } else {
-            tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+            tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+          tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
         }
       }
       '|' => {
@@ -600,15 +600,15 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
           let next = self.chars[self.pos]
           if next == '|' {
             self.pos += 1
-            tokens.push({ token_type: Logical, from: start, to: self.pos })
+            tokens.push({ token_type: Logical, from: start, to: self.pos, })
           } else if next == '=' {
             self.pos += 1
-            tokens.push({ token_type: Assignment, from: start, to: self.pos })
+            tokens.push({ token_type: Assignment, from: start, to: self.pos, })
           } else {
-            tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+            tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
           }
         } else {
-          tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+          tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
         }
       }
       '^' => {
@@ -616,9 +616,9 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
         self.pos += 1
         if self.pos < self.len && self.chars[self.pos] == '=' {
           self.pos += 1
-          tokens.push({ token_type: Assignment, from: start, to: self.pos })
+          tokens.push({ token_type: Assignment, from: start, to: self.pos, })
         } else {
-          tokens.push({ token_type: Bitwise, from: start, to: self.pos })
+          tokens.push({ token_type: Bitwise, from: start, to: self.pos, })
         }
       }
       '.' => {
@@ -628,55 +628,55 @@ pub fn GoTokenizer::tokenize_all(self : GoTokenizer) -> Array[GoToken] {
           self.chars[self.pos] == '.' &&
           self.chars[self.pos + 1] == '.' {
           self.pos += 2
-          tokens.push({ token_type: Ellipsis, from: start, to: self.pos })
+          tokens.push({ token_type: Ellipsis, from: start, to: self.pos, })
         } else {
-          tokens.push({ token_type: Dot, from: start, to: self.pos })
+          tokens.push({ token_type: Dot, from: start, to: self.pos, })
         }
       }
       ';' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Semicolon, from: start, to: self.pos })
+        tokens.push({ token_type: Semicolon, from: start, to: self.pos, })
       }
       ',' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Comma, from: start, to: self.pos })
+        tokens.push({ token_type: Comma, from: start, to: self.pos, })
       }
       '(' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: ParenOpen, from: start, to: self.pos })
+        tokens.push({ token_type: ParenOpen, from: start, to: self.pos, })
       }
       ')' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: ParenClose, from: start, to: self.pos })
+        tokens.push({ token_type: ParenClose, from: start, to: self.pos, })
       }
       '{' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceOpen, from: start, to: self.pos })
+        tokens.push({ token_type: BraceOpen, from: start, to: self.pos, })
       }
       '}' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BraceClose, from: start, to: self.pos })
+        tokens.push({ token_type: BraceClose, from: start, to: self.pos, })
       }
       '[' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BracketOpen, from: start, to: self.pos })
+        tokens.push({ token_type: BracketOpen, from: start, to: self.pos, })
       }
       ']' => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: BracketClose, from: start, to: self.pos })
+        tokens.push({ token_type: BracketClose, from: start, to: self.pos, })
       }
       _ => {
         let start = self.pos
         self.pos += 1
-        tokens.push({ token_type: Error, from: start, to: self.pos })
+        tokens.push({ token_type: Error, from: start, to: self.pos, })
       }
     }
   }
